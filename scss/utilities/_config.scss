@@ -1,0 +1,45 @@
+// ==========================================================================
+// Global Config
+// ==========================================================================
+
+// Path to Assets
+$path-img: '../img/';
+$path-font: '../fonts/';
+
+// Icon Fonts from icomoon
+@font-face {
+  font-family: 'icomoon';
+  src:  url('#{$path-font}icomoon.eot?ky9gej');
+  src:  url('#{$path-font}icomoon.eot?ky9gej#iefix') format('embedded-opentype'),
+    url('#{$path-font}icomoon.ttf?ky9gej') format('truetype'),
+    url('#{$path-font}icomoon.woff?ky9gej') format('woff'),
+    url('#{$path-font}icomoon.svg?ky9gej#icomoon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+// Font Stacks, Import & Variable
+$font-url--poppins: 'https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap';
+@include font-import($font-url--poppins);
+$font-family--primary: 'Poppins', sans-serif;
+
+// Color Usage
+$color-palettes: (
+
+);
+
+// Padding
+$padding-medium: 15px;
+
+// Breakpoints
+$break-small: 480px;
+$break-medium: 768px;
+$break-large: 992px;
+$break-extra-large: 1260px;
+
+// Content Width
+$cont-max-width-small: 450px;
+$cont-max-width-medium: 750px;
+$cont-max-width-large: 970px;
+$cont-max-width-extra-large: 1200px;

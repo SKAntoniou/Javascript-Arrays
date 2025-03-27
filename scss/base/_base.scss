@@ -1,0 +1,24 @@
+// ==========================================================================
+// Base Styles
+// ==========================================================================
+
+:root {
+  // Text Styling
+  font-size: 1rem;
+}
+
+body {
+  // Container Sizing
+  margin: 0;
+  width: 100%;
+
+  // Text Styling
+  font-family: $font-family--primary;
+  font-style: normal;
+
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}

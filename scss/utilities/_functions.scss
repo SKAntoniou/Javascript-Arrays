@@ -1,0 +1,41 @@
+// ==========================================================================
+// Functions
+// ==========================================================================
+
+// Import Google Fonts
+@mixin font-import($font-name) {
+  @if variable-exists(font-name) {
+    @import url($font-name);
+  } 
+  @else {
+    @warn "Font #{$font-name} variable was not found so it was not imported";
+  }
+}
+
+// Call the color palette
+@function palette($palette, $catagory, $shade: base, $modifier: base) {
+  // Tests as standard errors are not useful
+  $palette-map: map-get($color-palettes, $palette);
+  @if $palette-map == null {
+    @error "Palette '#{$palette}' does not exist in $color-palettes.";
+  }
+
+  $catagory-map: map-get($palette-map, $catagory);
+  @if $catagory-map == null {
+    @error "Category '#{$catagory}' does not exist in palette '#{$palette}'.";
+  }
+
+  $returning-colour: map-get($catagory-map, $shade);
+  @if $returning-colour == null {
+    @error "Shade '#{$shade}' does not exist in category '#{$catagory}' of palette '#{$palette}'.";
+  }
+  
+  @if $modifier == 'dark' { 
+    $returning-colour: darken($returning-colour, 10%);
+    @return $returning-colour;
+  } @else if $modifier == 'base' {
+    @return $returning-colour;
+  } @else {
+    @error "Modifier '#{$modifier}' does not exist";
+  }
+};

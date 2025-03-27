@@ -1,0 +1,19 @@
+// ==========================================================================
+// Container
+// ==========================================================================
+
+.container {
+  width: 100%;
+  margin: 0 auto;
+  padding-left: $padding-medium;
+  padding-right: $padding-medium;
+  @include mq(m) {
+    width: $cont-max-width-medium;
+  }
+  @include mq(l) {
+    width: $cont-max-width-large;
+  }
+  @include mq(xl) {
+    width: $cont-max-width-extra-large;
+  }
+}

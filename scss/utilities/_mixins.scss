@@ -1,0 +1,38 @@
+// ==========================================================================
+// Mixins
+// ==========================================================================
+
+// Colours & make dark
+@mixin dark-colour($property, $palette, $catagory, $shade: base) {
+  #{$property}: palette($palette, $catagory, $shade, base);
+  &:hover, &:active {
+    #{$property}: palette($palette, $catagory, $shade, dark);
+  }
+}
+
+// Media queries
+@mixin mq($break) {
+  @if $break == 's' {
+    @media (min-width: $break-small) {
+      @content;
+    }
+  }
+  @else if $break == 'm' {
+    @media (min-width: $break-medium) {
+      @content;
+    }
+  }
+  @else if $break == 'l' {
+    @media (min-width: $break-large) {
+      @content;
+    }
+  }
+  @else if $break == 'xl' {
+    @media (min-width: $break-extra-large) {
+      @content;
+    }
+  }
+  @else {
+    @error "Break-point #{$break} does not exist, check spelling and remember format is like: 's' or 'xl'.";
+  }
+}

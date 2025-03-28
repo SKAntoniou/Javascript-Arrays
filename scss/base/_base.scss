@@ -12,7 +12,9 @@
 
 // Light / Dark Mode
 @media (prefers-color-scheme: dark) {
-  @include ldmode-colours("dark");
+  :root {
+    @include ldmode-colours("dark");
+  }
 }
 html {
   color-scheme: dark light;

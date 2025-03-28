@@ -24,3 +24,9 @@
   border-color: var(--colour-text-contrast);
   background-color: var(--colour-background-accent);
 }
+.switch-toggle {
+  input:focus ~ span a,
+  input:focus + label {
+    outline-width: 0px;
+  }
+}

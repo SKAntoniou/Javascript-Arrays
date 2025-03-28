@@ -43,7 +43,7 @@
   @if ($mod == 'light' or $mod == 'dark') {
     $modmode: str-insert('mode', $mod, 0);
 
-    :root {
+    & {
       --colour-background-base:  #{palette($modmode,'background','base')};
       --colour-background-secondary: #{palette($modmode,'background','secondary')};
       --colour-background-tertiary: #{palette($modmode,'background','tertiary')};
@@ -56,5 +56,3 @@
     @error "Light & Dark mode function has been passed in incorrectly. The only allowed arguments are 'light' or 'dark'."
   }
 }
-
-@include ldmode-colours("light");

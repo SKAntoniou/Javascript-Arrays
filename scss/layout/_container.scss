@@ -17,3 +17,25 @@
     width: $cont-max-width-extra-large;
   }
 }
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rounded-large {
+  padding: $padding-large;
+  border-radius: $border-radius-large;
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  @include mq(l) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  margin-top: 30px;
+  margin-bottom: 30px;
+  background-color: var(--colour-background-secondary);
+}

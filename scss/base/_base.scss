@@ -3,19 +3,43 @@
 // ==========================================================================
 
 :root {
+  // Light / Dark Mode
+  @include ldmode-colours("light");
+
   // Text Styling
-  font-size: 1rem;
+  font-size: 1rem; // Force to browser text-size
 }
 
+// Light / Dark Mode
+@media (prefers-color-scheme: dark) {
+  @include ldmode-colours("dark");
+}
+html {
+  color-scheme: dark light;
+}
+[data-theme="light"] {
+  color-scheme: light;
+  @include ldmode-colours("light");
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  @include ldmode-colours("dark");
+}
+
+// HTML Tag Stylings
 body {
   // Container Sizing
   margin: 0;
   width: 100%;
+  min-height: 100vh;
 
   // Text Styling
   font-family: $font-family--primary;
   font-style: normal;
-
+  
+  // Colours
+  background-color: var(--colour-background-base);
+  color: var(--colour-text-base);
 }
 
 * {

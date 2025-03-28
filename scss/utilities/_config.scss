@@ -26,11 +26,38 @@ $font-family--primary: 'Poppins', sans-serif;
 
 // Color Usage
 $color-palettes: (
-
+  lightmode: (
+    background: (
+      base: #E4E3E3,
+      secondary: #84A9AC,
+      tertiary: #3B6978,
+      accent: #204051,
+    ),
+    text: (
+      base: #204051,
+      contrast: #E4E3E3,
+    ),
+  ),
+  darkmode: (
+    background: (
+      base: #204051,
+      secondary: #3B6978,
+      tertiary: #84A9AC,
+      accent: #E4E3E3,
+    ),
+    text: (
+      base: #E4E3E3,
+      contrast: #204051,
+    ),
+  ),
 );
 
 // Padding
 $padding-medium: 15px;
+$padding-large: 30px;
+
+// Borders
+$border-radius-large: 30px;
 
 // Breakpoints
 $break-small: 480px;

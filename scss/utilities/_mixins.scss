@@ -36,3 +36,25 @@
     @error "Break-point #{$break} does not exist, check spelling and remember format is like: 's' or 'xl'.";
   }
 }
+
+
+// Light & Dark Mode colouring
+@mixin ldmode-colours($mod) {
+  @if ($mod == 'light' or $mod == 'dark') {
+    $modmode: str-insert('mode', $mod, 0);
+
+    :root {
+      --colour-background-base:  #{palette($modmode,'background','base')};
+      --colour-background-secondary: #{palette($modmode,'background','secondary')};
+      --colour-background-tertiary: #{palette($modmode,'background','tertiary')};
+      --colour-background-accent: #{palette($modmode,'background','accent')};
+      --colour-text-base: #{palette($modmode,'text','base')};
+      --colour-text-contrast: #{palette($modmode,'text','contrast')};
+    }
+
+  } @else {
+    @error "Light & Dark mode function has been passed in incorrectly. The only allowed arguments are 'light' or 'dark'."
+  }
+}
+
+@include ldmode-colours("light");

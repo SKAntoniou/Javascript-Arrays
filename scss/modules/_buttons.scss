@@ -1,0 +1,26 @@
+// ==========================================================================
+// Buttons
+// ==========================================================================
+
+// Ligh / Dark Mode Toggle in Header - Following the same SCSS formatting the theme was made in to prevent issues.
+.switch-toggle.switch-candy,
+.switch-light.switch-candy > span {
+  background-color: var(--colour-background-base);
+}
+.switch-light.switch-candy span span,
+.switch-light.switch-candy input:checked ~ span span:first-child,
+.switch-toggle.switch-candy label {
+  color: var(--colour-text-base);
+  font-size: 1.5rem;
+  font-weight: normal;
+  text-shadow: 1px 1px 1px var(--colour-text-contrast);
+}
+.switch-light.switch-candy input ~ span span:first-child,
+.switch-light.switch-candy input:checked ~ span span:nth-child(2),
+.switch-candy input:checked + label {
+  color: var(--colour-text-contrast);
+}
+.switch-candy a {
+  border-color: var(--colour-text-contrast);
+  background-color: var(--colour-background-accent);
+}

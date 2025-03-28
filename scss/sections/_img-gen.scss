@@ -1,0 +1,24 @@
+// ==========================================================================
+// Image Gen & Save area
+// ==========================================================================
+
+#img-gen-container {
+  margin-top: 30px;
+  margin-bottom: 30px;
+  background-color: var(--colour-background-secondary);
+}
+
+.user-saved-images {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $grid-gap-small;
+  @include mq(m) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  @include mq(l) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @include mq(xl) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

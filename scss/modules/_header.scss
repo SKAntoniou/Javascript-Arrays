@@ -4,10 +4,10 @@
 
 header {
   background-color: var(--colour-background-secondary);
-  padding: 20px;
+  padding: $element-size-heading-padding;
   h2 {
     margin: 0;
-    font-size: 30px;
+    font-size: $font-size-heading;
   }
 }
 

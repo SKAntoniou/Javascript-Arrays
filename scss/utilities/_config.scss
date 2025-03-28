@@ -52,12 +52,27 @@ $color-palettes: (
   ),
 );
 
+// Font Sizing
+$font-size-heading: 2rem;
+
+// Element Sizing
+$element-size-heading-padding: 20px;
+
+// Page Sizing
+$page-size-total: 100vh;
+$page-size-heading: calc((#{$element-size-heading-padding} * 2) + #{$font-size-heading});
+$page-size-main: calc(#{$page-size-total} - #{$page-size-heading});
+
 // Padding
 $padding-medium: 15px;
 $padding-large: 30px;
 
 // Borders
 $border-radius-large: 30px;
+
+// Grid Variables
+$grid-gap-small: 5px;
+$grid-gap-large: 30px;
 
 // Breakpoints
 $break-small: 480px;

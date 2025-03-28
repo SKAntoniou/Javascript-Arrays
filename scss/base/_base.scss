@@ -48,3 +48,11 @@ body {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
 }
+
+main {
+  // Flex element to stop margin collapsing
+  display: flex;
+  flex-direction: column;
+  // Height as my preference for this is to use without scrolling much.
+  height: $page-size-main;
+}

@@ -3,10 +3,44 @@
 // ==========================================================================
 
 .btn {
-  
+  // Container
+  border: none;
+  border-radius: $border-radius-small;
+  padding: 0.5rem;
+
+  // Background
+  background-color: var(--colour-background-tertiary);
+
+  // Interaction
+  cursor: pointer;
 }
 
+.btn-toggle {
+  // default is inactive
+  border: 1px solid var(--colour-background-tertiary);
+  background-color: var(--colour-background-secondary);
 
+  // Control active with JS, only one should be active at a time
+  &.active {
+    background-color: var(--colour-background-tertiary);
+  }
+}
+
+.btn-refresh {
+  // Colouring
+  background-color: var(--colour-background-secondary);
+  color: var(--colour-text-base);
+
+  // Depth Effect
+  box-shadow: var(--colour-button-box-shadow);
+}
+.btn-save {
+  //Colouring
+  background-color: var(--colour-button-save);
+
+  // Depth Effect
+  box-shadow: var(--colour-button-box-shadow);
+}
 
 
 
@@ -16,6 +50,7 @@
 .switch-toggle.switch-candy,
 .switch-light.switch-candy > span {
   background-color: var(--colour-background-base);
+  height: $element-size-heading-height-buttons;
 }
 .switch-light.switch-candy span span,
 .switch-light.switch-candy input:checked ~ span span:first-child,

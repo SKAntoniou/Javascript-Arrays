@@ -50,6 +50,9 @@
       --colour-background-accent: #{palette($modmode,'background','accent')};
       --colour-text-base: #{palette($modmode,'text','base')};
       --colour-text-contrast: #{palette($modmode,'text','contrast')};
+      --colour-text-shadow: #{palette($modmode,'text','shadow')};
+      --colour-button-box-shadow: #{palette('shared','button','box-shadow')};
+      --colour-button-save: #{palette('shared','button','save')};
     }
 
   } @else {

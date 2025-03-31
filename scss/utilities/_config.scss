@@ -36,6 +36,7 @@ $color-palettes: (
     text: (
       base: #204051,
       contrast: #E4E3E3,
+      shadow: 0px 0px 5px rgba(255,255,255,0.2),
     ),
   ),
   darkmode: (
@@ -48,31 +49,43 @@ $color-palettes: (
     text: (
       base: #E4E3E3,
       contrast: #204051,
+      shadow: 0px 0px 5px rgba(0,0,0,0.3),
     ),
   ),
+  shared: (
+    button: (
+      box-shadow: "inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.2)",
+      save: #0ab242,
+    ),
+  )
 );
+
+// Padding
+$padding-medium: 15px;
+$padding-large: 30px;
 
 // Font Sizing
 $font-size-heading: 2rem;
 
 // Element Sizing
 $element-size-heading-padding: 20px;
+$element-size-heading-height-buttons: 3rem;
+$element-size-main-margin: 30px;
+
+// Grid Variables
+$grid-gap-small: 10px;
+$grid-gap-medium: 20px;
+$grid-gap-large: 30px;
 
 // Page Sizing
 $page-size-total: 100vh;
-$page-size-heading: calc((#{$element-size-heading-padding} * 2) + #{$font-size-heading});
+$page-size-heading: calc((#{$element-size-heading-padding} * 2) + #{$element-size-heading-height-buttons});
 $page-size-main: calc(#{$page-size-total} - #{$page-size-heading});
 
-// Padding
-$padding-medium: 15px;
-$padding-large: 30px;
-
 // Borders
+$border-radius-small: 5px;
+$border-radius-medium: 15px;
 $border-radius-large: 30px;
-
-// Grid Variables
-$grid-gap-small: 5px;
-$grid-gap-large: 30px;
 
 // Breakpoints
 $break-small: 480px;

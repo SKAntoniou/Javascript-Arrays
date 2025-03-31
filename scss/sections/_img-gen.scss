@@ -2,10 +2,58 @@
 // Image Gen & Save area
 // ==========================================================================
 
-#img-gen-container {
-  margin-top: 30px;
-  margin-bottom: 30px;
-  background-color: var(--colour-background-secondary);
+.image-preview {
+  // Container
+  display: flex;
+  flex-direction: column;
+  gap: $grid-gap-small;
+
+  h3 {
+    margin: 0;
+  }
+}
+
+.image-source {
+  // Container
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $grid-gap-small;
+
+  // Container Styling 
+}
+
+.image-container {
+  // Container
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $grid-gap-small;
+  width: 100%;
+
+  // Container Styling
+  border-radius: $border-radius-medium;
+  background-color: var(--colour-background-tertiary);
+  padding: 10px;
+
+  // ADD TEXT SHADOW
+  text-shadow: var(--colour-text-shadow);
+
+  .button-container {
+    display: flex;
+    justify-content: space-around;
+  }
+}
+
+.user-area {
+  // Container
+  display: flex;
+  flex-direction: column;
+  gap: $grid-gap-small;
+
+
+
+  max-height: 100%;
+
 }
 
 .user-saved-images {
@@ -21,4 +69,6 @@
   @include mq(xl) {
     grid-template-columns: repeat(3, 1fr);
   }
+
+  overflow-y: scroll;
 }

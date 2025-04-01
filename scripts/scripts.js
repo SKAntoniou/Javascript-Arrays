@@ -1,4 +1,4 @@
-// Light / Dark Mode Toggle ===================================================
+// Light / Dark Mode Toggle =============================================================================
 const lightDarkToggle = document.getElementById('light-dark-toggle');
 lightDarkToggle.addEventListener("change", () => {
   for (let currentValue of lightDarkToggle.children) {
@@ -17,6 +17,26 @@ lightDarkToggle.addEventListener("change", () => {
   }
 });
 
+// Email validation ======================================================================================
+// Regex 
+const emailRegex = /^\S+@\S+\.\S+$/;
+
+// Document Selectors
+const emailInput = document.getElementById("input-email");
+const emailSubmit = document.getElementById("submit-email");
+
+// Processing
+['focusout', 'change'].forEach( event => {
+  emailInput.addEventListener(event, () => {
+    if (!emailRegex.test(emailInput.value.toLowerCase())) {
+      emailInput.setCustomValidity("Please enter a valid email address.");
+    } else {
+      emailInput.setCustomValidity("");
+    }
+    emailInput.reportValidity();
+  })
+})
+
 // Fetch Functions ===================================================
 function fetchData(url) {
   return fetch(url)
@@ -32,7 +52,7 @@ function checkStatus(response) {
   }
 }
 
-// Random image fetch ===================================================
+// Random image fetch =======================================================================================
 // Parent containers
 const imagePreviewContainer = document.querySelector(".image-preview");
 const userArea = document.querySelector(".user-area");
@@ -60,7 +80,9 @@ newImageButton.addEventListener('click', () => {
 saveImageButton.addEventListener('click', async () => {
   storeImage(currentBlob, "a@a.com");
   renderSavedImages("a@a.com");
+  retrieveEmails().then( output => output);
 });
+
 
 
 // Helper Functions ================================
@@ -76,6 +98,15 @@ function fetchBlob(url) {
             genImageContainer.crossOrigin = "anonymous";
           });
 };
+
+// Retrieve Images then add them to userSavesImages Element
+async function renderSavedImages(email) {
+  const storedImages = await retrieveImages(email);
+  for (let i = 0, j = storedImages.length; i < j; i++) {
+    const htmlImg = createImgContainer(storedImages[i].image);
+    userSavedImages.appendChild( htmlImg );
+  }
+}
 
 // Store image (in blob format) in database in browser (using indexedDB API)
 function storeImage(blob, email) {
@@ -100,18 +131,34 @@ function storeImage(blob, email) {
       const dbTable = db.createObjectStore("images", { keyPath: "id", autoIncrement: true });
       dbTable.createIndex("emailIndex", "email", { unique: false });
     } 
+
+    // Check for email table, if it doesn't exist, make it with id as primary key
+    if (!db.objectStoreNames.contains("emails")) {
+      const dbTable = db.createObjectStore("emails", { keyPath: "id", autoIncrement: true });
+      dbTable.createIndex("emailIndex", "email", { unique: true });
+    }
   };
 
   // If database opened successfully
   request.onsuccess = (event) => {
     // The database instance
     const db = event.target.result;
-    // Starts a transaction with write privileges
-    const transaction = db.transaction("images", "readwrite");
+    // Starts a transaction on images with write privileges
+    const transactionImages = db.transaction("images", "readwrite");
+
     // Gets location of images table (in this DB, it is object oriented so it actually called a store.)
-    const imagesTable = transaction.objectStore("images");
+    const imagesTable = transactionImages.objectStore("images");
     // Add blob to table
-    imagesTable.put({ email: email, image: blob });
+    imagesTable.add({ email: email, image: blob });
+
+    // Starts a transaction on emails with write privileges
+    const transactionEmails = db.transaction("emails", "readwrite");
+
+    // Gets location of email table
+    const emailTable = transactionEmails.objectStore("emails");
+    // Add email to table
+    emailTable.add( { email: email} );
+    // Can add error handling to print to the console here if last command gets assigned to a variable
   }
 }
 
@@ -167,6 +214,7 @@ async function retrieveImages(email) {
   });
 }
 
+// Create HTML to insert image
 function createImgContainer(imageBlob) {
   const htmlElement = document.createElement("img");
   htmlElement.classList.add("img");
@@ -177,10 +225,49 @@ function createImgContainer(imageBlob) {
   return htmlElement;
 }
 
-async function renderSavedImages(email) {
-  const storedImages = await retrieveImages(email);
-  for (let i = 0, j = storedImages.length; i < j; i++) {
-    const htmlImg = createImgContainer(storedImages[i].image);
-    userSavedImages.appendChild( htmlImg );
-  }
+// Retrieve emails
+async function retrieveEmails() {
+  const databaseName = "userImages";
+
+  return new Promise( (resolve, reject) => {
+
+    const request = indexedDB.open(databaseName, 1);
+    request.onerror = (event) => {
+      reject(`Database error: ${event.target.error?.message}`);
+    };
+
+    request.onsuccess = (event) => {
+      const db = event.target.result;
+
+      const transaction = db.transaction("emails", "readonly");
+      const emailTable = transaction.objectStore("emails");
+
+
+      // Define what column to search under
+      const index = emailTable.index("emailIndex");
+      // Open a cursor object with no filter
+      const getRequest = index.openCursor();
+
+      let cursorValue = [];
+
+      // On error
+      getRequest.onerror = (event) => {
+        reject(`Database error: ${event.target.error?.message}`);
+      };
+      // On return success
+      getRequest.onsuccess = (event) => {
+        // Use Cursor
+        const cursor = event.target.result;
+
+        // This will auto loop.
+        if (cursor) {
+          cursorValue.push(cursor.value);
+          // console.log("Found:", cursor.value);
+          cursor.continue(); // Move to the next matching record
+        } else {
+          resolve(cursorValue);
+        }
+      };
+    };
+  });
 }

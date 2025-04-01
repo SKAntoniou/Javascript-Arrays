@@ -47,8 +47,25 @@ let emailValid = false;
   })
 });
 
-// Email Processing ==============================================================================
-// Variables for processing
+// Random image fetch ==============================================================================
+// Variables for processing =================
+// Parent containers
+const imagePreviewContainer = document.querySelector(".image-preview");
+const userArea = document.querySelector(".user-area");
+
+// Child elements
+const genImageContainer = imagePreviewContainer.querySelector(".generated-image");
+const newImageButton = imagePreviewContainer.querySelector(".btn-refresh");
+const saveImageButton = imagePreviewContainer.querySelector(".btn-save");
+const userSavedImages = userArea.querySelector(".user-saved-images");
+
+// URLs for random image sites
+const picsumURL = "https://picsum.photos/600/400";
+
+// Variable to store current image in
+let currentBlob;
+// Run the function once to display one image when page loads.
+fetchBlob(picsumURL);
 let currentEmail = "";
 
 // Submit Email
@@ -70,6 +87,7 @@ emailSwitchAccount.addEventListener('click', () => {
   emailContainerVerified.style.display = "none";
   emailContainerVerified.querySelector("#current-email").innerHTML = "";
   currentEmail = "";
+  userSavedImages.innerHTML = "";
 });
 
 // Fetch Functions ===================================================
@@ -87,25 +105,7 @@ function checkStatus(response) {
   }
 }
 
-// Random image fetch =======================================================================================
-// Parent containers
-const imagePreviewContainer = document.querySelector(".image-preview");
-const userArea = document.querySelector(".user-area");
-
-// Child elements
-const genImageContainer = imagePreviewContainer.querySelector(".generated-image");
-const newImageButton = imagePreviewContainer.querySelector(".btn-refresh");
-const saveImageButton = imagePreviewContainer.querySelector(".btn-save");
-const userSavedImages = userArea.querySelector(".user-saved-images");
-
-// URLs for random image sites
-const picsumURL = "https://picsum.photos/600/400";
-
-// Variable to store current image in
-let currentBlob;
-// Run the function once to display one image when page loads.
-fetchBlob(picsumURL);
-
+// Image and DB Functions ========================
 // Get New Image
 newImageButton.addEventListener('click', () => {
   fetchBlob(picsumURL);
@@ -113,12 +113,12 @@ newImageButton.addEventListener('click', () => {
 
 // Save image on email using currentEmail variable
 saveImageButton.addEventListener('click', async () => {
-  storeImage(currentBlob, currentEmail);
-  renderSavedImages(currentEmail);
-  retrieveEmails().then( output => output);
+  if (currentEmail !== "") {
+    storeImage(currentBlob, currentEmail);
+    renderSavedImages(currentEmail);
+    retrieveEmails().then( output => output);
+  }
 });
-
-
 
 // Helper Functions ================================
 

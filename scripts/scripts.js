@@ -17,25 +17,60 @@ lightDarkToggle.addEventListener("change", () => {
   }
 });
 
-// Email validation ======================================================================================
+// Email validation ==============================================================================
 // Regex 
 const emailRegex = /^\S+@\S+\.\S+$/;
 
 // Document Selectors
 const emailInput = document.getElementById("input-email");
 const emailSubmit = document.getElementById("submit-email");
+const emailContainerMissing = document.getElementById("missing-email");
+const emailContainerVerified = document.querySelector("#verified-email");
+const emailSwitchAccount = emailContainerVerified.querySelector("#switch-account");
+
+// Variables for processing
+const emailInvalidMessage = "Please enter a valid email address.";
+let emailValid = false;
 
 // Processing
+// Email Validation
 ['focusout', 'change'].forEach( event => {
   emailInput.addEventListener(event, () => {
     if (!emailRegex.test(emailInput.value.toLowerCase())) {
-      emailInput.setCustomValidity("Please enter a valid email address.");
+      emailInput.setCustomValidity(emailInvalidMessage);
+      emailValid = false;
     } else {
       emailInput.setCustomValidity("");
+      emailValid = true;
     }
     emailInput.reportValidity();
   })
-})
+});
+
+// Email Processing ==============================================================================
+// Variables for processing
+let currentEmail = "";
+
+// Submit Email
+emailSubmit.addEventListener('click', () => {
+  if (emailValid) {
+    currentEmail = emailInput.value.toLowerCase();
+    emailContainerMissing.style.display = "none";
+    emailContainerVerified.style.display = "inherit";
+    emailContainerVerified.querySelector("#current-email").innerHTML = currentEmail;
+  } else {
+    emailInput.setCustomValidity(emailInvalidMessage);
+    emailInput.reportValidity();
+  }
+});
+
+// Switch email
+emailSwitchAccount.addEventListener('click', () => {
+  emailContainerMissing.style.display = "inherit";
+  emailContainerVerified.style.display = "none";
+  emailContainerVerified.querySelector("#current-email").innerHTML = "";
+  currentEmail = "";
+});
 
 // Fetch Functions ===================================================
 function fetchData(url) {
@@ -76,10 +111,10 @@ newImageButton.addEventListener('click', () => {
   fetchBlob(picsumURL);
 });
 
-// Save image on email
+// Save image on email using currentEmail variable
 saveImageButton.addEventListener('click', async () => {
-  storeImage(currentBlob, "a@a.com");
-  renderSavedImages("a@a.com");
+  storeImage(currentBlob, currentEmail);
+  renderSavedImages(currentEmail);
   retrieveEmails().then( output => output);
 });
 

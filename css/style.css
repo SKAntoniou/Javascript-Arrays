@@ -563,4 +563,7 @@ header {
     .user-saved-images {
       grid-template-columns: repeat(3, 1fr); } }
 
+#verified-email {
+  display: none; }
+
 /*# sourceMappingURL=style.css.map */

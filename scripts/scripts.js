@@ -57,10 +57,9 @@ newImageButton.addEventListener('click', () => {
 });
 
 // Save image on email
-saveImageButton.addEventListener('click', () => {
+saveImageButton.addEventListener('click', async () => {
   storeImage(currentBlob, "a@a.com");
-  const storedImages = retrieveImages("a@a.com");
-  console.log(storedImages);
+  renderSavedImages("a@a.com");
 });
 
 
@@ -98,7 +97,8 @@ function storeImage(blob, email) {
 
     // Check for images table, if it doesn't exist, make it with id as primary key
     if (!db.objectStoreNames.contains("images")) {
-      db.createObjectStore("images", { autoIncrement: true });
+      const dbTable = db.createObjectStore("images", { keyPath: "id", autoIncrement: true });
+      dbTable.createIndex("emailIndex", "email", { unique: false });
     } 
   };
 
@@ -115,85 +115,72 @@ function storeImage(blob, email) {
   }
 }
 
-// Retrieve Images. The output should be stored in a variable.
-function retrieveImages(email) {
+// Retrieve Images. The output should be stored in a variable. This needs to be async for cursor.
+async function retrieveImages(email) {
   // Won't be repeating notes for this one, for notes on how this works, see the storeImages function. New commands will be noted.
 
   const databaseName = "userImages";
-  const request = indexedDB.open(databaseName, 1);
 
-  request.onerror = (event) => {
-    console.log(`Database error: ${event.target.error?.message}`);
-  };
+  // Make new promise for cursor
+  return new Promise( (resolve, reject) => {
 
-  request.onsuccess = (event) => {
-    const db = event.target.result;
-    // In read only this time.
-    const transaction = db.transaction("images", "readonly");
-    const imagesTable = transaction.objectStore("images");
+    const request = indexedDB.open(databaseName, 1);
 
-    // Get all values that have the same email
-    const getRequest = imagesTable.getAll();  // NEED TO CHANGE TO CURSOR. 
-    // On error
-    getRequest.onerror = () => {
-      console.log(`Database error: ${event.target.error?.message}`);
+    request.onerror = (event) => {
+      reject(`Database error: ${event.target.error?.message}`);
     };
-    // On return success
-    getRequest.onsuccess = () => {
-      console.log(getRequest.result);
-      // This will return an array of key and value pairs. 
-      return getRequest.result; 
+
+    request.onsuccess = (event) => {
+      const db = event.target.result;
+
+      // In read only this time.
+      const transaction = db.transaction("images", "readonly");
+      const imagesTable = transaction.objectStore("images");
+
+      // Define what column to search under
+      const index = imagesTable.index("emailIndex");
+      // Open a cursor object (special term for this type of DB) to search email column
+      const getRequest = index.openCursor(IDBKeyRange.only(email));
+
+      // Value array
+      let cursorValue = [];
+
+      // On error
+      getRequest.onerror = (event) => {
+        reject(`Database error: ${event.target.error?.message}`);
+      };
+      // On return success
+      getRequest.onsuccess = (event) => {
+        // Use Cursor
+        const cursor = event.target.result;
+
+        // This will auto loop.
+        if (cursor) {
+          cursorValue.push(cursor.value);
+          // console.log("Found:", cursor.value);
+          cursor.continue(); // Move to the next matching record
+        } else {
+          resolve(cursorValue);
+        }
+      };
     };
-  };
+  });
 }
 
-
-/*
-
-// When page loads - Add a random image.
-genImageContainer.src = "https://picsum.photos/600/400?random=1";
-genImageContainer.crossOrigin = "anonymous";
-
-// genImageContainer.addEventListener('load', () => {
-
-  newImageButton.addEventListener('click', () => {
-    genImageContainer.src = "https://picsum.photos/600/400?random=1";
-    genImageContainer.crossOrigin = "anonymous";
-  })
-
-  saveImageButton.addEventListener('click', () => {
-    // genImageContainer.crossOrigin = "anonymous";
-    const imgBase64Data = getBase64Image(genImageContainer);
-    localStorage.setItem("imgData",imgBase64Data);
-  
-    let imgBase64DataCopy = localStorage.getItem('imgData');
-    imgBase64DataCopy = "data:image/png;base64," + imgBase64DataCopy;
-
-    userSavedImages.appendChild( createImgContainer(imgBase64DataCopy) );
-  })
-// })
-
-// OLD method, maybe cause of clipping, trying blob now
-function getBase64Image(img) {
-  let canvas = document.createElement("canvas");
-  canvas.width = img.width;
-  canvas.height = img.height;
-
-  let ctx = canvas.getContext("2d");
-  ctx.drawImage(img, 0, 0);
-
-  let dataURL = canvas.toDataURL("image/png");
-
-  return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
-}
-
-
-function createImgContainer(imageData) {
+function createImgContainer(imageBlob) {
   const htmlElement = document.createElement("img");
   htmlElement.classList.add("img");
   htmlElement.alt = "Random Image";
-  htmlElement.src = imageData;
+  let url = window.URL || window.webkitURL;
+  htmlElement.src = url.createObjectURL(imageBlob);
+  htmlElement.crossOrigin = "anonymous";
   return htmlElement;
 }
 
-*/
+async function renderSavedImages(email) {
+  const storedImages = await retrieveImages(email);
+  for (let i = 0, j = storedImages.length; i < j; i++) {
+    const htmlImg = createImgContainer(storedImages[i].image);
+    userSavedImages.appendChild( htmlImg );
+  }
+}

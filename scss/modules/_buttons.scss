@@ -5,14 +5,14 @@
 .btn {
   // Container
   border: none;
-  border-radius: $border-radius-small;
-  padding: 0.5rem;
+  @include sizing(border-radius, border-radius, button-base);
+  @include sizing(padding, padding, button-base);
 
   // Background
   background-color: var(--colour-background-tertiary);
 
   // Text
-  font-size: 0.875rem;
+  @include sizing(font-size, font, button-base);
 
   // Interaction
   cursor: pointer;
@@ -53,13 +53,13 @@
 .switch-toggle.switch-candy,
 .switch-light.switch-candy > span {
   background-color: var(--colour-background-base);
-  height: $element-size-heading-height-buttons;
+  @include sizing(height, height, header-buttons);
 }
 .switch-light.switch-candy span span,
 .switch-light.switch-candy input:checked ~ span span:first-child,
 .switch-toggle.switch-candy label {
   color: var(--colour-text-base);
-  font-size: 1.5rem;
+  @include sizing(font-size, font, header-buttons);
   font-weight: normal;
   text-shadow: 1px 1px 1px var(--colour-text-contrast);
 }

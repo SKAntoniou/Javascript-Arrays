@@ -6,7 +6,7 @@
   // Container
   display: flex;
   flex-direction: column;
-  gap: $grid-gap-small;
+  @include sizing(gap, flex-gap, subsection);
 
   h3 {
     margin: 0;
@@ -18,23 +18,21 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: $grid-gap-small;
+  @include sizing(gap, flex-gap, subsection);
   width: 100%;
 
   // Container Styling
-  border-radius: $border-radius-medium;
+  @include sizing(border-radius, border-radius, subsection);
+  @include sizing(padding, padding, subsection);
   background-color: var(--colour-background-tertiary);
-  padding: 10px;
 
   // ADD TEXT SHADOW
   text-shadow: var(--colour-text-shadow);
 
+  // Redo - 
   .button-container {
     display: flex;
     justify-content: space-around;
-    .btn-save {
-      margin-left: $padding-medium;
-    }
   }
 }
 
@@ -42,16 +40,13 @@
   // Container
   display: flex;
   flex-direction: column;
-  gap: $grid-gap-small;
+  @include sizing(gap, flex-gap, subsection);
 
   overflow-y: hidden;
   max-height: 100%;
 }
 
 #missing-email, #verified-email {
-  h4 {
-    margin-right: $padding-medium;
-  }
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -63,7 +58,7 @@
 .user-saved-images {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: $grid-gap-small;
+  @include sizing(gap, grid-gap, subsection);
   @include mq(m) {
     grid-template-columns: repeat(3, 1fr);
   }

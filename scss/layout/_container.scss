@@ -5,8 +5,8 @@
 .container {
   width: 100%;
   margin: 0 auto;
-  padding-left: $padding-medium;
-  padding-right: $padding-medium;
+  @include sizing(padding-left, padding, container-hori);
+  @include sizing(padding-right, padding, container-hori);
   @include mq(m) {
     width: $cont-max-width-medium;
   }
@@ -25,19 +25,19 @@
 }
 
 .rounded-large {
-  padding: $element-size-main-container-padding;
-  border-radius: $border-radius-medium;
+  @include sizing(padding, padding, main-container);
+  @include sizing(border-radius, border-radius, main);
 }
 
 .main-grid {
   // Sizing
-  max-height: $page-size-main-grid;
+  max-height: 100%;
   // Colour
   background-color: var(--colour-background-secondary);
   // Grid Variables
   display: grid;
   grid-template-columns: 1fr;
-  gap: $grid-gap-small;
+  @include sizing(gap, grid-gap, main);
   @include mq(l) {
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: 1fr;

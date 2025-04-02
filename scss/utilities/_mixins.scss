@@ -70,7 +70,10 @@
     @error "Either #{$catagory} or #{$element} is not in base of $break-sizing";
   };
   // Add base styling to CSS.
-  #{$property}: $base-property;
+  // To allow for CSS Variables
+  & { 
+    #{$property}: $base-property;
+  }
 
   // Counter for highest valid breakpoint
   $highest-breakpoint: $base-property;

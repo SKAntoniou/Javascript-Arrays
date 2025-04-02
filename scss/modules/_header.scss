@@ -4,10 +4,13 @@
 
 header {
   background-color: var(--colour-background-secondary);
-  padding: $element-size-heading-height-padding $element-size-heading-width-padding;
+  @include sizing(padding-top, padding, header-vert);
+  @include sizing(padding-bottom, padding, header-vert);
+  @include sizing(padding-left, padding, header-hori);
+  @include sizing(padding-right, padding, header-hori);
   h2 {
     margin: 0;
-    font-size: $font-size-heading;
+    @include sizing(font-size, font, header);
   }
 }
 

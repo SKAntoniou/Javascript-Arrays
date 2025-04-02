@@ -6,6 +6,13 @@
   // Light / Dark Mode
   @include ldmode-colours("light");
 
+  // Page Height Variables
+  $page-size-total: 100vh;
+  @include sizing("--page-size-heading-height-padding", padding, header-vert);
+  @include sizing("--page-size-heading-height-buttons", height, header-buttons);
+  --page-size-heading: calc((var(--page-size-heading-height-padding) * 2) + var(--page-size-heading-height-buttons));
+  --page-size-main: calc(#{$page-size-total} - var(--page-size-heading));
+
   // Text Styling
   font-size: 1rem; // Force to browser text-size
 }
@@ -54,6 +61,9 @@ main {
   display: flex;
   flex-direction: column;
   // Height as my preference for this is to use without scrolling much.
-  padding: $element-size-main-margin 0;
-  height: $page-size-main;
+  padding: 0;
+  @include sizing(padding-top, margin, main-vert);
+  @include sizing(padding-bottom, margin, main-vert);
+
+  height: var(--page-size-main);
 }

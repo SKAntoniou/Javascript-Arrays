@@ -58,4 +58,53 @@
   } @else {
     @error "Light & Dark mode function has been passed in incorrectly. The only allowed arguments are 'light' or 'dark'."
   }
-}
+};
+
+// The sizing mixin that auto adds media queries where needed.
+// This will increase compile time and make repeats in $break-sizing but worth it
+@mixin sizing($property, $catagory, $element) {
+
+  // Check for base sizing
+  $base-property: break-sizing('base', $catagory, $element);
+  @if $base-property == "inherit" {
+    @error "Either #{$catagory} or #{$element} is not in base of $break-sizing";
+  };
+  // Add base styling to CSS.
+  #{$property}: $base-property;
+
+  // Counter for highest valid breakpoint
+  $highest-breakpoint: $base-property;
+
+  // Check for if there are any matches in futher breakpoints
+  $small-property: break-sizing('small', $catagory, $element);
+  @if $small-property != "inherit" and $small-property != $highest-breakpoint {
+    @include mq('s') {
+      #{$property}: $small-property;
+      $highest-breakpoint: $small-property;
+    }
+  }
+
+  $medium-property: break-sizing('medium', $catagory, $element);
+  @if $medium-property != "inherit" and $medium-property != $highest-breakpoint {
+    @include mq('m') {
+      #{$property}: $medium-property;
+      $highest-breakpoint: $medium-property;
+    }
+  }
+
+  $large-property: break-sizing('large', $catagory, $element);
+  @if $large-property != "inherit" and $large-property != $highest-breakpoint {
+    @include mq('l') {
+      #{$property}: $large-property;
+      $highest-breakpoint: $large-property;
+    }
+  }
+
+  $xlarge-property: break-sizing('xlarge', $catagory, $element);
+  @if $xlarge-property != "inherit" and $xlarge-property != $highest-breakpoint {
+    @include mq('xl') {
+      #{$property}: $xlarge-property;
+      $highest-breakpoint: $xlarge-property;
+    }
+  }
+};

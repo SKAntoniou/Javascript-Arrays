@@ -78,7 +78,7 @@ emailSubmit.addEventListener('click', () => {
   if (emailValid) {
     currentEmail = emailInput.value.toLowerCase();
     emailContainerMissing.style.display = "none";
-    emailContainerVerified.style.display = "inherit";
+    emailContainerVerified.style.display = "flex";
     emailContainerVerified.querySelector("#current-email").innerHTML = currentEmail;
 
     renderSavedImages(currentEmail);
@@ -90,7 +90,7 @@ emailSubmit.addEventListener('click', () => {
 
 // Switch email
 emailSwitchAccount.addEventListener('click', () => {
-  emailContainerMissing.style.display = "inherit";
+  emailContainerMissing.style.display = "flex";
   emailContainerVerified.style.display = "none";
   emailContainerVerified.querySelector("#current-email").innerHTML = "";
   currentEmail = "";

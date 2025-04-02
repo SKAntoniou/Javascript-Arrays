@@ -381,8 +381,7 @@ body {
 main {
   display: flex;
   flex-direction: column;
-  padding-top: 30px;
-  padding-bottom: 30px;
+  padding: 10px 0;
   height: calc(100vh - calc((20px * 2) + 3rem)); }
 
 .container {
@@ -406,16 +405,15 @@ main {
   align-items: center; }
 
 .rounded-large {
-  padding: 30px;
-  border-radius: 30px; }
+  padding: 15px;
+  border-radius: 15px; }
 
 .main-grid {
-  max-height: 100%;
+  max-height: calc(calc(100vh - calc((20px * 2) + 3rem)) - (15px * 2));
   background-color: var(--colour-background-secondary);
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: repeat(2, 1fr);
-  gap: 30px; }
+  gap: 10px; }
   @media (min-width: 992px) {
     .main-grid {
       grid-template-columns: repeat(2, 1fr);
@@ -426,6 +424,7 @@ main {
   border-radius: 5px;
   padding: 0.5rem;
   background-color: var(--colour-background-tertiary);
+  font-size: 0.875rem;
   cursor: pointer; }
 
 .btn-disabled {
@@ -511,7 +510,7 @@ main {
 
 header {
   background-color: var(--colour-background-secondary);
-  padding: 20px; }
+  padding: 20px 5px; }
   header h2 {
     margin: 0;
     font-size: 2rem; }
@@ -536,18 +535,31 @@ header {
   .image-container .button-container {
     display: flex;
     justify-content: space-around; }
+    .image-container .button-container .btn-save {
+      margin-left: 15px; }
 
 .user-area {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  height: 100%; }
+  overflow-y: hidden;
+  max-height: 100%; }
+
+#missing-email, #verified-email {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; }
+  #missing-email h4, #verified-email h4 {
+    margin-right: 15px; }
+
+.user-info-email {
+  text-align: center; }
 
 .user-saved-images {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
-  overflow-y: scroll; }
+  overflow-y: auto; }
   @media (min-width: 768px) {
     .user-saved-images {
       grid-template-columns: repeat(3, 1fr); } }

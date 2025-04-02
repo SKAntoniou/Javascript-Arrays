@@ -54,7 +54,6 @@ main {
   display: flex;
   flex-direction: column;
   // Height as my preference for this is to use without scrolling much.
-  padding-top: 30px;
-  padding-bottom: 30px;
+  padding: $element-size-main-margin 0;
   height: $page-size-main;
 }

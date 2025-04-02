@@ -25,20 +25,19 @@
 }
 
 .rounded-large {
-  padding: $padding-large;
-  border-radius: $border-radius-large;
+  padding: $element-size-main-container-padding;
+  border-radius: $border-radius-medium;
 }
 
 .main-grid {
   // Sizing
-  max-height: 100%;
+  max-height: $page-size-main-grid;
   // Colour
   background-color: var(--colour-background-secondary);
   // Grid Variables
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: repeat(2, 1fr);
-  gap: $grid-gap-large;
+  gap: $grid-gap-small;
   @include mq(l) {
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: 1fr;

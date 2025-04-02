@@ -59,6 +59,45 @@ $color-palettes: (
     ),
   )
 );
+// Due to how the function and mixin for this work. 
+// Do not repeat any names if they are not for the same property.
+$break-sizing: (
+  base: (
+    padding: (),
+    margin: (),
+    height: (),
+    grid-gap: (),
+    border: (),
+  ),
+  small: (
+    padding: (),
+    margin: (),
+    height: (),
+    grid-gap: (),
+    border: (),
+  ),
+  medium: (
+    padding: (),
+    margin: (),
+    height: (),
+    grid-gap: (),
+    border: (),
+  ),
+  large: (
+    padding: (),
+    margin: (),
+    height: (),
+    grid-gap: (),
+    border: (),
+  ),
+  xlarge: (
+    padding: (),
+    margin: (),
+    height: (),
+    grid-gap: (),
+    border: (),
+  ),
+);
 
 // Padding
 $padding-medium: 15px;
@@ -67,10 +106,14 @@ $padding-large: 30px;
 // Font Sizing
 $font-size-heading: 2rem;
 
-// Element Sizing
-$element-size-heading-padding: 20px;
+// Element Sizing - Mobile
+
+// Element Sizing - Desktop
+$element-size-heading-height-padding: 20px;
+$element-size-heading-width-padding: 5px;
 $element-size-heading-height-buttons: 3rem;
-$element-size-main-margin: 30px;
+$element-size-main-margin: 10px;
+$element-size-main-container-padding: 15px;
 
 // Grid Variables
 $grid-gap-small: 10px;
@@ -79,8 +122,9 @@ $grid-gap-large: 30px;
 
 // Page Sizing
 $page-size-total: 100vh;
-$page-size-heading: calc((#{$element-size-heading-padding} * 2) + #{$element-size-heading-height-buttons});
+$page-size-heading: calc((#{$element-size-heading-height-padding} * 2) + #{$element-size-heading-height-buttons});
 $page-size-main: calc(#{$page-size-total} - #{$page-size-heading});
+$page-size-main-grid: calc(#{$page-size-main} - (#{$element-size-main-container-padding} * 2));
 
 // Borders
 $border-radius-small: 5px;

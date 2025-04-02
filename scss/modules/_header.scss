@@ -4,7 +4,7 @@
 
 header {
   background-color: var(--colour-background-secondary);
-  padding: $element-size-heading-padding;
+  padding: $element-size-heading-height-padding $element-size-heading-width-padding;
   h2 {
     margin: 0;
     font-size: $font-size-heading;

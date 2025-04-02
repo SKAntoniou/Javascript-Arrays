@@ -32,6 +32,9 @@
   .button-container {
     display: flex;
     justify-content: space-around;
+    .btn-save {
+      margin-left: $padding-medium;
+    }
   }
 }
 
@@ -41,7 +44,20 @@
   flex-direction: column;
   gap: $grid-gap-small;
 
-  height: 100%;
+  overflow-y: hidden;
+  max-height: 100%;
+}
+
+#missing-email, #verified-email {
+  h4 {
+    margin-right: $padding-medium;
+  }
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.user-info-email {
+  text-align: center;
 }
 
 .user-saved-images {
@@ -58,7 +74,7 @@
     grid-template-columns: repeat(3, 1fr);
   }
 
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 // Changes with JS only

@@ -39,3 +39,24 @@
     @error "Modifier '#{$modifier}' does not exist";
   }
 };
+
+// The helper for the sizing function below
+@function break-sizing($size, $catagory, $element) {
+  // Tests as standard errors are not useful
+  $break-map: map-get($break-sizing, $size);
+  @if $break-map == null or $break-map == () {
+    @return "inherit";
+  };
+
+  $catagory-map: map-get($break-map, $catagory);
+  @if $catagory-map == null or $catagory-map == () {
+    @return "inherit";
+  };
+
+  $returning-element: map-get($catagory-map, $element);
+  @if $returning-element == null or $returning-element == () {
+    @return "inherit";
+  };
+
+  @return $returning-element;
+};

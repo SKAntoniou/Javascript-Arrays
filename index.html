@@ -49,7 +49,7 @@
               <img class="img generated-image" src="" alt="Random Image">
             </div>
             <div class="button-container">
-              <button class="btn btn-refresh">Get New Random Image</button>
+              <button class="btn btn-refresh">New Random Image</button>
               <button class="btn btn-save">Save Image</button>
             </div>
           </div>
@@ -60,13 +60,17 @@
           <div class="user-info">
             <div id="missing-email">
               <h4>Enter Email to save pictures for later</h4>
-              <input id="input-email" type="text" placeholder="Email">
-              <input id="submit-email" type="submit" class="btn"></button>
+              <div class="user-info-email">
+                <input id="input-email" type="text" placeholder="Email">
+                <input id="submit-email" type="submit" class="btn"></button>
+              </div>
             </div>
             <div id="verified-email">
-              <h4>Current Email</h4>
-              <span id="current-email"></span>
-              <button id="switch-account" class="btn">Switch Account</button>
+              <h4>Saved Images for current email</h4>
+              <div class="user-info-email">
+                <span id="current-email"></span>
+                <button id="switch-account" class="btn">Switch Account</button>
+              </div>
             </div>
           </div>
           <div class="user-saved-images">

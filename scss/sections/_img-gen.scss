@@ -13,15 +13,6 @@
   }
 }
 
-.image-source {
-  // Container
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: $grid-gap-small;
-
-  // Container Styling 
-}
-
 .image-container {
   // Container
   flex: 1;
@@ -50,10 +41,7 @@
   flex-direction: column;
   gap: $grid-gap-small;
 
-
-
-  max-height: 100%;
-
+  height: 100%;
 }
 
 .user-saved-images {

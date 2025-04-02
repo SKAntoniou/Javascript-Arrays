@@ -67,6 +67,11 @@ let currentBlob;
 // Run the function once to display one image when page loads.
 fetchBlob(picsumURL);
 let currentEmail = "";
+let lastSave = {
+  "email": "",
+  "blob": ""
+}
+let shownImages = [];
 
 // Submit Email
 emailSubmit.addEventListener('click', () => {
@@ -75,6 +80,8 @@ emailSubmit.addEventListener('click', () => {
     emailContainerMissing.style.display = "none";
     emailContainerVerified.style.display = "inherit";
     emailContainerVerified.querySelector("#current-email").innerHTML = currentEmail;
+
+    renderSavedImages(currentEmail);
   } else {
     emailInput.setCustomValidity(emailInvalidMessage);
     emailInput.reportValidity();
@@ -88,6 +95,7 @@ emailSwitchAccount.addEventListener('click', () => {
   emailContainerVerified.querySelector("#current-email").innerHTML = "";
   currentEmail = "";
   userSavedImages.innerHTML = "";
+  shownImages = [];
 });
 
 // Fetch Functions ===================================================
@@ -114,9 +122,12 @@ newImageButton.addEventListener('click', () => {
 // Save image on email using currentEmail variable
 saveImageButton.addEventListener('click', async () => {
   if (currentEmail !== "") {
-    storeImage(currentBlob, currentEmail);
-    renderSavedImages(currentEmail);
-    retrieveEmails().then( output => output);
+    // Check if is about to save a duplicate image and ignore it will.
+    if (currentEmail !== lastSave.email || currentBlob !== lastSave.blob) {
+      storeImage(currentBlob, currentEmail);
+      renderSavedImages(currentEmail);
+      retrieveEmails();
+    }
   }
 });
 
@@ -138,13 +149,17 @@ function fetchBlob(url) {
 async function renderSavedImages(email) {
   const storedImages = await retrieveImages(email);
   for (let i = 0, j = storedImages.length; i < j; i++) {
-    const htmlImg = createImgContainer(storedImages[i].image);
-    userSavedImages.appendChild( htmlImg );
+    if (!shownImages.includes(storedImages[i].id)) {
+      const htmlImg = createImgContainer(storedImages[i].image);
+      shownImages.push(storedImages[i].id);
+      userSavedImages.appendChild( htmlImg );
+    }
   }
 }
 
 // Store image (in blob format) in database in browser (using indexedDB API)
 function storeImage(blob, email) {
+  // DB name to just make things easier to edit if needed.
   const databaseName = "userImages";
 
   // Open (or make) database with version number 1
@@ -193,6 +208,12 @@ function storeImage(blob, email) {
     const emailTable = transactionEmails.objectStore("emails");
     // Add email to table
     emailTable.add( { email: email} );
+
+
+    // Save last image and email to not save duplicates
+    lastSave.blob = blob;
+    lastSave.email = email;
+
     // Can add error handling to print to the console here if last command gets assigned to a variable
   }
 }
@@ -239,7 +260,6 @@ async function retrieveImages(email) {
         // This will auto loop.
         if (cursor) {
           cursorValue.push(cursor.value);
-          // console.log("Found:", cursor.value);
           cursor.continue(); // Move to the next matching record
         } else {
           resolve(cursorValue);
@@ -297,7 +317,6 @@ async function retrieveEmails() {
         // This will auto loop.
         if (cursor) {
           cursorValue.push(cursor.value);
-          // console.log("Found:", cursor.value);
           cursor.continue(); // Move to the next matching record
         } else {
           resolve(cursorValue);

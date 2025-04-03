@@ -75,7 +75,7 @@
     #{$property}: $base-property;
   }
 
-  // Counter for highest valid breakpoint
+  // Tracker for highest valid breakpoint's value
   $highest-breakpoint: $base-property;
 
   // Check for if there are any matches in futher breakpoints

@@ -44,14 +44,14 @@ $cont-max-width-extra-large: 1200px;
 $color-palettes: (
   lightmode: (
     background: (
-      base: #E4E3E3,
-      secondary: #84A9AC,
-      tertiary: #3B6978,
-      accent: #204051,
+      base: #F8F3D9,
+      secondary: #EBE5C2,
+      tertiary: #B9B28A,
+      accent: #504B38,
     ),
     text: (
-      base: #204051,
-      contrast: #E4E3E3,
+      base: #504B38,
+      contrast: #F8F3D9,
       shadow: 0px 0px 5px rgba(255,255,255,0.2),
     ),
   ),
@@ -84,7 +84,7 @@ $break-sizing: (
     padding: (
       button-base: 0.5rem,
       container-hori: 15px,
-      header-vert: 20px,
+      header-vert: 15px,
       header-hori: 5px,
       main-container: 15px,
       subsection: 10px,
@@ -93,14 +93,14 @@ $break-sizing: (
       main-vert: 10px,
     ),
     height: (
-      header-buttons: 3rem,
+      header-buttons: 2.5rem,
     ),
     flex-gap: (
       subsection: 10px,
     ),
     grid-gap: (
       subsection: 10px,
-      main: 10px,
+      main: 20px,
     ),
     border-radius: (
       button-base: 5px, 
@@ -109,8 +109,8 @@ $break-sizing: (
     ),
     font: (
       button-base: 0.875rem,
-      header: 2rem,
-      header-buttons: 1.5rem,
+      header: 1.5rem,
+      header-buttons: 1.25rem,
     ),
   ),
   small: (

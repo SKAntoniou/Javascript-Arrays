@@ -7,15 +7,15 @@
   display: flex;
   flex-direction: column;
   @include sizing(gap, flex-gap, subsection);
-
+  
   h3 {
     margin: 0;
+    text-align: center;
   }
 }
 
 .image-container {
   // Container
-  flex: 1;
   display: flex;
   flex-direction: column;
   @include sizing(gap, flex-gap, subsection);
@@ -44,15 +44,30 @@
 
   overflow-y: hidden;
   max-height: 100%;
+
+  h4 {
+    margin: 0;
+  }
 }
 
 #missing-email, #verified-email {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
   align-items: center;
+  @include sizing(gap, flex-gap, subsection);
 }
 .user-info-email {
-  text-align: center;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+  @include sizing(gap, flex-gap, subsection);
+}
+#current-email {
+  font-weight: 700;
+  text-wrap: wrap;
 }
 
 .user-saved-images {

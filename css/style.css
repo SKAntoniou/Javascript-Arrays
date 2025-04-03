@@ -317,19 +317,19 @@ template {
   --page-size-main: calc(100vh - var(--page-size-heading));
   font-size: 1rem; }
   :root {
-    --colour-background-base: #E4E3E3;
-    --colour-background-secondary: #84A9AC;
-    --colour-background-tertiary: #3B6978;
-    --colour-background-accent: #204051;
-    --colour-text-base: #204051;
-    --colour-text-contrast: #E4E3E3;
+    --colour-background-base: #F8F3D9;
+    --colour-background-secondary: #EBE5C2;
+    --colour-background-tertiary: #B9B28A;
+    --colour-background-accent: #504B38;
+    --colour-text-base: #504B38;
+    --colour-text-contrast: #F8F3D9;
     --colour-text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.2);
     --colour-button-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.2);
     --colour-button-save: #0ab242; }
   :root {
-    --page-size-heading-height-padding: 20px; }
+    --page-size-heading-height-padding: 15px; }
   :root {
-    --page-size-heading-height-buttons: 3rem; }
+    --page-size-heading-height-buttons: 2.5rem; }
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -348,12 +348,12 @@ html {
 [data-theme="light"] {
   color-scheme: light; }
   [data-theme="light"] {
-    --colour-background-base: #E4E3E3;
-    --colour-background-secondary: #84A9AC;
-    --colour-background-tertiary: #3B6978;
-    --colour-background-accent: #204051;
-    --colour-text-base: #204051;
-    --colour-text-contrast: #E4E3E3;
+    --colour-background-base: #F8F3D9;
+    --colour-background-secondary: #EBE5C2;
+    --colour-background-tertiary: #B9B28A;
+    --colour-background-accent: #504B38;
+    --colour-text-base: #504B38;
+    --colour-text-contrast: #F8F3D9;
     --colour-text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.2);
     --colour-button-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.2);
     --colour-button-save: #0ab242; }
@@ -427,7 +427,7 @@ main {
   display: grid;
   grid-template-columns: 1fr; }
   .main-grid {
-    gap: 10px; }
+    gap: 20px; }
   @media (min-width: 992px) {
     .main-grid {
       grid-template-columns: repeat(2, 1fr);
@@ -464,7 +464,7 @@ main {
   background-color: var(--colour-background-base); }
   .switch-toggle.switch-candy,
   .switch-light.switch-candy > span {
-    height: 3rem; }
+    height: 2.5rem; }
 
 .switch-light.switch-candy span span,
 .switch-light.switch-candy input:checked ~ span span:first-child,
@@ -475,7 +475,7 @@ main {
   .switch-light.switch-candy span span,
   .switch-light.switch-candy input:checked ~ span span:first-child,
   .switch-toggle.switch-candy label {
-    font-size: 1.5rem; }
+    font-size: 1.25rem; }
 
 .switch-light.switch-candy input ~ span span:first-child,
 .switch-light.switch-candy input:checked ~ span span:nth-child(2),
@@ -489,6 +489,10 @@ main {
 .switch-toggle input:focus ~ span a,
 .switch-toggle input:focus + label {
   outline-width: 0px; }
+
+#input-email {
+  height: 100%;
+  background-color: var(--colour-background-base); }
 
 @font-face {
   font-family: 'icomoon';
@@ -533,9 +537,9 @@ main {
 header {
   background-color: var(--colour-background-secondary); }
   header {
-    padding-top: 20px; }
+    padding-top: 15px; }
   header {
-    padding-bottom: 20px; }
+    padding-bottom: 15px; }
   header {
     padding-left: 5px; }
   header {
@@ -543,7 +547,7 @@ header {
   header h2 {
     margin: 0; }
     header h2 {
-      font-size: 2rem; }
+      font-size: 1.5rem; }
 
 .image-preview {
   display: flex;
@@ -551,10 +555,10 @@ header {
   .image-preview {
     gap: 10px; }
   .image-preview h3 {
-    margin: 0; }
+    margin: 0;
+    text-align: center; }
 
 .image-container {
-  flex: 1;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -577,14 +581,29 @@ header {
   max-height: 100%; }
   .user-area {
     gap: 10px; }
+  .user-area h4 {
+    margin: 0; }
 
 #missing-email, #verified-email {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
   align-items: center; }
+  #missing-email, #verified-email {
+    gap: 10px; }
 
 .user-info-email {
-  text-align: center; }
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap; }
+  .user-info-email {
+    gap: 10px; }
+
+#current-email {
+  font-weight: 700;
+  text-wrap: wrap; }
 
 .user-saved-images {
   display: grid;

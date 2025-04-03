@@ -80,7 +80,7 @@ emailSubmit.addEventListener('click', () => {
     emailContainerMissing.style.display = "none";
     emailContainerVerified.style.display = "flex";
     emailContainerVerified.querySelector("#current-email").innerHTML = currentEmail;
-
+    storeEmail(currentEmail);
     renderSavedImages(currentEmail);
   } else {
     emailInput.setCustomValidity(emailInvalidMessage);
@@ -278,6 +278,36 @@ function createImgContainer(imageBlob) {
   htmlElement.src = url.createObjectURL(imageBlob);
   htmlElement.crossOrigin = "anonymous";
   return htmlElement;
+}
+
+// Store email in database in browser
+function storeEmail(email) {
+  // For notes, check the storeImages function.
+  const databaseName = "userImages";
+  const request = indexedDB.open(databaseName, 1);
+  request.onerror = (event) => {
+    console.log(`Database error: ${event.target.error?.message}`);
+  }
+  request.onupgradeneeded = (event) => {
+    const db = event.target.result;
+    if (!db.objectStoreNames.contains("images")) {
+      const dbTable = db.createObjectStore("images", { keyPath: "id", autoIncrement: true });
+      dbTable.createIndex("emailIndex", "email", { unique: false });
+    } 
+    if (!db.objectStoreNames.contains("emails")) {
+      const dbTable = db.createObjectStore("emails", { keyPath: "id", autoIncrement: true });
+      dbTable.createIndex("emailIndex", "email", { unique: true });
+    }
+  };
+  request.onsuccess = (event) => {
+    const db = event.target.result;
+    const transactionEmails = db.transaction("emails", "readwrite");
+    const emailTable = transactionEmails.objectStore("emails");
+    emailTable.add( { email: email} );
+
+    // Can add error handling to print to the console here if last command gets assigned to a variable
+  }
+
 }
 
 // Retrieve emails

@@ -62,17 +62,20 @@ const userSavedImages = userArea.querySelector(".user-saved-images");
 // URLs for random image sites
 const picsumURL = "https://picsum.photos/600/400";
 
+// Variables for DB Tracking
+let currentEmail = "";
+let imageStored = false;
+let shownImages = [];
+let currentDBVersion = 1;
 // Variable to store current image in
 let currentBlob;
+let currentImageId = getNewImageId(); // This is a promise
 // Run the function once to display one image when page loads.
 fetchBlob(picsumURL);
-let currentEmail = "";
-let lastSave = {
-  "email": "",
-  "blob": ""
-}
-let shownImages = [];
 
+// Buttons =============================================
+
+// Email Buttons ============
 // Submit Email
 function submitFunction() {
   if (emailValid) {
@@ -80,17 +83,17 @@ function submitFunction() {
     emailContainerMissing.style.display = "none";
     emailContainerVerified.style.display = "flex";
     emailContainerVerified.querySelector("#current-email").innerHTML = currentEmail;
-    storeEmail(currentEmail);
     renderSavedImages(currentEmail);
   } else {
     emailInput.setCustomValidity(emailInvalidMessage);
     emailInput.reportValidity();
   }
 }
+// Submit via submit button
 emailSubmit.addEventListener('click', () => {
   submitFunction();
 });
-// Also submit on enter press.
+// Also submit on enter press in the input field.
 emailInput.addEventListener("keypress", (e) => {
   if (e.key === 'Enter' && emailValid) {
     submitFunction();
@@ -107,48 +110,45 @@ emailSwitchAccount.addEventListener('click', () => {
   shownImages = [];
 });
 
-// Fetch Functions ===================================================
-function fetchData(url) {
-  return fetch(url)
-    .then(checkStatus())
-    .then(res => res.json())
-    .catch(error => console.log(`Failed to fetch an image from ${url} \n`, error))
-}
-function checkStatus(response) {
-  if (response.ok) {
-    return Promise.resolve(response);
-  } else {
-    return Promise.reject(new Error(response.statusText));
-  }
-}
-
-// Image and DB Functions ========================
+// Image Buttons ============
 // Get New Image
 newImageButton.addEventListener('click', () => {
   fetchBlob(picsumURL);
+  if (imageStored) {
+    currentImageId = getNewImageId();
+  }
+  imageStored = false;
 });
-
-// Save image on email using currentEmail variable
-// Wont work at the moment.
+// Save image on email using currentEmail
 saveImageButton.addEventListener('click', async () => {
   if (currentEmail !== "") {
-    // Check if is about to save a duplicate image and ignore it will.
-    let isDuplicate = false;
-
-    if (!isDuplicate) {
-      storeImage(currentBlob, currentEmail);
-      renderSavedImages(currentEmail);
-      retrieveEmails();
+    if (!imageStored) {
+      storeImage(currentBlob);
     }
-
+    storeImageReference(currentImageId, currentEmail);
+    renderSavedImages(currentEmail);
+    imageStored = true;
   }
 });
+
+
+
 
 
 
 // Images on the page have a rolling id, if not saved, the image counter doesn't go up
 // if saved it is saved to the image table and the user that saved it will be a reference to that id on that table.
 // if that user already has that id, don't save it.
+
+
+// DB limitation only allows to add stores (tables) when you change version number on db.
+// This mean for every email, we have to increase version number counter and reopen the database
+// I could store this number in localstorage
+// alternatively make only one other table. 
+
+
+
+
 
 
 // Helper Functions ================================
@@ -164,8 +164,17 @@ function fetchBlob(url) {
             genImageContainer.crossOrigin = "anonymous";
           });
 };
-
-// Retrieve Images then add them to userSavesImages Element
+// Create HTML to insert image
+function createImgContainer(imageBlob) {
+  const htmlElement = document.createElement("img");
+  htmlElement.classList.add("img");
+  htmlElement.alt = "Random Image";
+  let url = window.URL || window.webkitURL;
+  htmlElement.src = url.createObjectURL(imageBlob);
+  htmlElement.crossOrigin = "anonymous";
+  return htmlElement;
+}
+// Render Images
 async function renderSavedImages(email) {
   const storedImages = await retrieveImages(email);
   for (let i = 0, j = storedImages.length; i < j; i++) {
@@ -177,15 +186,15 @@ async function renderSavedImages(email) {
   }
 }
 
+// Database Functions ===============================
 // Store image (in blob format) in database in browser (using indexedDB API)
-function storeImage(blob, email) {
+function storeImage(blob) {
   // DB name to just make things easier to edit if needed.
   const databaseName = "userImages";
 
   // Open (or make) database with version number 1
   // returns IDBOpenDBRequest object
-  const request = indexedDB.open(databaseName, 1);
-
+  const request = indexedDB.open(databaseName);
   // Handle error opening database
   request.onerror = (event) => {
     console.log(`Database error: ${event.target.error?.message}`);
@@ -195,17 +204,10 @@ function storeImage(blob, email) {
   request.onupgradeneeded = (event) => {
     // The database instance
     const db = event.target.result;
-
+    currentDBVersion = db.version;
     // Check for images table, if it doesn't exist, make it with id as primary key
     if (!db.objectStoreNames.contains("images")) {
-      const dbTable = db.createObjectStore("images", { keyPath: "id", autoIncrement: true });
-      dbTable.createIndex("emailIndex", "email", { unique: false });
-    } 
-
-    // Check for email table, if it doesn't exist, make it with id as primary key
-    if (!db.objectStoreNames.contains("emails")) {
-      const dbTable = db.createObjectStore("emails", { keyPath: "id", autoIncrement: true });
-      dbTable.createIndex("emailIndex", "email", { unique: true });
+      db.createObjectStore("images", { keyPath: "id", autoIncrement: true });
     }
   };
 
@@ -213,148 +215,192 @@ function storeImage(blob, email) {
   request.onsuccess = (event) => {
     // The database instance
     const db = event.target.result;
+    currentDBVersion = db.version;
     // Starts a transaction on images with write privileges
     const transactionImages = db.transaction("images", "readwrite");
 
     // Gets location of images table (in this DB, it is object oriented so it actually called a store.)
     const imagesTable = transactionImages.objectStore("images");
     // Add blob to table
-    imagesTable.add({ email: email, image: blob });
+    imagesTable.add({ image: blob });
 
-    // Starts a transaction on emails with write privileges
-    const transactionEmails = db.transaction("emails", "readwrite");
-
-    // Gets location of email table
-    const emailTable = transactionEmails.objectStore("emails");
-    // Add email to table
-    emailTable.add( { email: email} );
-
-
-    // Save last image and email to not save duplicates
-    lastSave.blob = blob;
-    lastSave.email = email;
-
-    // Can add error handling to print to the console here if last command gets assigned to a variable
+    transactionImages.oncomplete = () => {
+      db.close();
+    };
   }
-}
-
-// Retrieve Images. The output should be stored in a variable. This needs to be async for cursor.
-async function retrieveImages(email) {
-  // Won't be repeating notes for this one, for notes on how this works, see the storeImages function. New commands will be noted.
-
+};
+// Store imageId to email table
+function storeImageReference(imageId, email) {
   const databaseName = "userImages";
+  const request = indexedDB.open(databaseName);
 
-  // Make new promise for cursor
-  return new Promise( (resolve, reject) => {
-
-    const request = indexedDB.open(databaseName, 1);
-
-    request.onerror = (event) => {
-      reject(`Database error: ${event.target.error?.message}`);
-    };
-
-    request.onsuccess = (event) => {
-      const db = event.target.result;
-
-      // In read only this time.
-      const transaction = db.transaction("images", "readonly");
-      const imagesTable = transaction.objectStore("images");
-
-      // Define what column to search under
-      const index = imagesTable.index("emailIndex");
-      // Open a cursor object (special term for this type of DB) to search email column
-      const getRequest = index.openCursor(IDBKeyRange.only(email));
-
-      // Value array
-      let cursorValue = [];
-
-      // On error
-      getRequest.onerror = (event) => {
-        reject(`Database error: ${event.target.error?.message}`);
-      };
-      // On return success
-      getRequest.onsuccess = (event) => {
-        // Use Cursor
-        const cursor = event.target.result;
-
-        // This will auto loop.
-        if (cursor) {
-          cursorValue.push(cursor.value);
-          cursor.continue(); // Move to the next matching record
-        } else {
-          resolve(cursorValue);
-        }
-      };
-    };
-  });
-}
-
-// Create HTML to insert image
-function createImgContainer(imageBlob) {
-  const htmlElement = document.createElement("img");
-  htmlElement.classList.add("img");
-  htmlElement.alt = "Random Image";
-  let url = window.URL || window.webkitURL;
-  htmlElement.src = url.createObjectURL(imageBlob);
-  htmlElement.crossOrigin = "anonymous";
-  return htmlElement;
-}
-
-// Store email in database in browser
-function storeEmail(email) {
-  // For notes, check the storeImages function.
-  const databaseName = "userImages";
-  const request = indexedDB.open(databaseName, 1);
   request.onerror = (event) => {
     console.log(`Database error: ${event.target.error?.message}`);
   }
+
   request.onupgradeneeded = (event) => {
     const db = event.target.result;
+    currentDBVersion = db.version;
     if (!db.objectStoreNames.contains("images")) {
-      const dbTable = db.createObjectStore("images", { keyPath: "id", autoIncrement: true });
-      dbTable.createIndex("emailIndex", "email", { unique: false });
-    } 
-    if (!db.objectStoreNames.contains("emails")) {
-      const dbTable = db.createObjectStore("emails", { keyPath: "id", autoIncrement: true });
-      dbTable.createIndex("emailIndex", "email", { unique: true });
+      db.createObjectStore("images", { keyPath: "id", autoIncrement: true });
+    }
+
+    if (!db.objectStoreNames.contains(email)) {
+      const dbTable = db.createObjectStore(email, { keyPath: "id", autoIncrement: true });
+      dbTable.createIndex("imageIndex", "imageId", { unique: true });
     }
   };
+
   request.onsuccess = (event) => {
     const db = event.target.result;
-    const transactionEmails = db.transaction("emails", "readwrite");
-    const emailTable = transactionEmails.objectStore("emails");
-    emailTable.add( { email: email} );
-
-    // Can add error handling to print to the console here if last command gets assigned to a variable
+    currentDBVersion = db.version;
+    if (!db.objectStoreNames.contains(email)) {
+      db.close();
+      makeNewEmailStore(databaseName, email, () => {
+        storeImageReference(imageId, email);
+      });
+    } else {
+      const transactionEmail = db.transaction(email, "readwrite");
+      const emailTable = transactionEmail.objectStore(email);
+      imageId
+        .then( result => { 
+          result++; // To counteract the zero and one index mess
+          emailTable.add( { imageId: result} );})
+        .catch( () => {console.error("Error fetching currentImageId in storeImageReference:", error);});
+        transactionEmail.oncomplete = () => {
+        db.close();
+      };
+    }
   }
-
-}
-
-// Retrieve emails
-async function retrieveEmails() {
+};
+// Retrieve Images from Database
+async function retrieveImages(email) {
   const databaseName = "userImages";
+  // Make new promise for cursor
+  const imageIds = new Promise( (resolve, reject) => {
+    const request = indexedDB.open(databaseName);
 
-  return new Promise( (resolve, reject) => {
-
-    const request = indexedDB.open(databaseName, 1);
     request.onerror = (event) => {
       reject(`Database error: ${event.target.error?.message}`);
     };
 
     request.onsuccess = (event) => {
       const db = event.target.result;
+      currentDBVersion = db.version;
 
-      const transaction = db.transaction("emails", "readonly");
-      const emailTable = transaction.objectStore("emails");
+      if (!db.objectStoreNames.contains(email)) {
+        db.close();
+        makeNewEmailStore(databaseName, email, () => {
+          retrieveImages(email);
+        });
+      } else {
+        // Read only this time
+        const transaction = db.transaction(email, "readonly");
+        const emailTable = transaction.objectStore(email);
+        const getRequest = emailTable.openCursor();
 
+        let cursorValue = [];
+        // On error
+        getRequest.onerror = (event) => {
+          reject(`Database error: ${event.target.error?.message}`);
+        };
+        // On return success
+        getRequest.onsuccess = (event) => {
+          // Use Cursor
+          const cursor = event.target.result;
 
-      // Define what column to search under
-      const index = emailTable.index("emailIndex");
-      // Open a cursor object with no filter
-      const getRequest = index.openCursor();
+          // This will auto loop.
+          if (cursor) {
+            cursorValue.push(cursor.value.imageId);
+            cursor.continue(); // Move to the next matching record
+          } else {
+            resolve(cursorValue);
+          }
+        };
+        transaction.oncomplete = () => {
+          db.close();
+        };
+      }
+    }
+  });
+
+  return imageIds.then( async (imageIds) => {
+    return new Promise( (resolve, reject) => {
+      const request = indexedDB.open(databaseName);
+      request.onerror = (event) => {
+        reject(`Database error: ${event.target.error?.message}`);
+      };
+      request.onsuccess = (event) => {
+        const db = event.target.result;
+        currentDBVersion = db.version;
+        // Read only this time
+        const transaction = db.transaction("images", "readonly");
+        const imagesTable = transaction.objectStore("images");
+        const getRequest = imagesTable.openCursor();
+
+        let cursorValue = [];
+        // On error
+        getRequest.onerror = (event) => {
+          reject(`Database error: ${event.target.error?.message}`);
+        };
+        // On return success
+        getRequest.onsuccess = (event) => {
+          // Use Cursor
+          const cursor = event.target.result;
+
+          // This will auto loop.
+          if (cursor) {
+            for (let i = 0, j = imageIds.length; i < j; i++) {
+              // imageIds are this email's images saved as Original Email ID
+              // Cursor is all the images' ids.
+              if (imageIds[i] == cursor.value.id) {
+                cursorValue.push(cursor.value);
+              }
+            }
+            cursor.continue(); // Move to the next matching record
+          } else {
+            resolve(cursorValue);
+          }
+        };
+        transaction.oncomplete = () => {
+          db.close();
+        };
+      };
+    });
+  });
+}
+
+// Get next id number
+function getNewImageId() {
+  const databaseName = "userImages";
+  const allImages = new Promise( (resolve, reject) => {
+    const request = indexedDB.open(databaseName);
+
+    // Event when database is created or version number has changed
+    request.onupgradeneeded = (event) => {
+      // The database instance
+      const db = event.target.result;
+      currentDBVersion = db.version;
+
+      // Check for images table, if it doesn't exist, make it with id as primary key
+      if (!db.objectStoreNames.contains("images")) {
+        db.createObjectStore("images", { keyPath: "id", autoIncrement: true });
+      }
+    };
+
+    request.onerror = (event) => {
+      reject(`Database error: ${event.target.error?.message}`);
+    };
+
+    request.onsuccess = (event) => {
+      const db = event.target.result;
+      currentDBVersion = db.version;
+      // Read only this time
+      const transaction = db.transaction("images", "readonly");
+      const imagesTable = transaction.objectStore("images");
+      const getRequest = imagesTable.openCursor();
 
       let cursorValue = [];
-
       // On error
       getRequest.onerror = (event) => {
         reject(`Database error: ${event.target.error?.message}`);
@@ -372,6 +418,32 @@ async function retrieveEmails() {
           resolve(cursorValue);
         }
       };
-    };
+      transaction.oncomplete = () => {
+        db.close();
+      };
+    }
   });
+  // It auto increments starting from 1... no comment
+  return allImages.then( allImages => allImages.length)
+}
+
+// Database Helper functions =======
+function makeNewEmailStore(databaseName, email, passthrough) {
+  const updatedDB = indexedDB.open(databaseName, currentDBVersion + 1);
+  updatedDB.onerror = (event) => {
+    console.log(`Database error: ${event.target.error?.message}`);
+    currentDBVersion = db.version;
+  };
+  updatedDB.onupgradeneeded = (event) => {
+    const db = event.target.result;
+    currentDBVersion = db.version;
+    const dbTable = db.createObjectStore(email, { keyPath: "id", autoIncrement: true });
+    dbTable.createIndex("imageIndex", "imageId", { unique: true });
+  };
+  updatedDB.onsuccess = (event) => {
+    const db = event.target.result;
+    currentDBVersion = db.version;
+    db.close();
+    passthrough();
+  };
 }

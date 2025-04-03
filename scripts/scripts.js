@@ -92,7 +92,7 @@ emailSubmit.addEventListener('click', () => {
 });
 // Also submit on enter press.
 emailInput.addEventListener("keypress", (e) => {
-  if (e.key === 'Enter') {
+  if (e.key === 'Enter' && emailValid) {
     submitFunction();
   }
 })
@@ -129,16 +129,27 @@ newImageButton.addEventListener('click', () => {
 });
 
 // Save image on email using currentEmail variable
+// Wont work at the moment.
 saveImageButton.addEventListener('click', async () => {
   if (currentEmail !== "") {
     // Check if is about to save a duplicate image and ignore it will.
-    if (currentEmail !== lastSave.email || currentBlob !== lastSave.blob) {
+    let isDuplicate = false;
+
+    if (!isDuplicate) {
       storeImage(currentBlob, currentEmail);
       renderSavedImages(currentEmail);
       retrieveEmails();
     }
+
   }
 });
+
+
+
+// Images on the page have a rolling id, if not saved, the image counter doesn't go up
+// if saved it is saved to the image table and the user that saved it will be a reference to that id on that table.
+// if that user already has that id, don't save it.
+
 
 // Helper Functions ================================
 

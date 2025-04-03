@@ -74,7 +74,7 @@ let lastSave = {
 let shownImages = [];
 
 // Submit Email
-emailSubmit.addEventListener('click', () => {
+function submitFunction() {
   if (emailValid) {
     currentEmail = emailInput.value.toLowerCase();
     emailContainerMissing.style.display = "none";
@@ -86,7 +86,16 @@ emailSubmit.addEventListener('click', () => {
     emailInput.setCustomValidity(emailInvalidMessage);
     emailInput.reportValidity();
   }
+}
+emailSubmit.addEventListener('click', () => {
+  submitFunction();
 });
+// Also submit on enter press.
+emailInput.addEventListener("keypress", (e) => {
+  if (e.key === 'Enter') {
+    submitFunction();
+  }
+})
 
 // Switch email
 emailSwitchAccount.addEventListener('click', () => {

@@ -114,7 +114,6 @@ emailSwitchAccount.addEventListener('click', () => {
 
 // Save image on email using currentEmail
 saveImageButton.addEventListener('click', async () => {
-  console.log("clicked");
   if (currentEmail !== "") {
     if (!imageStored) {
       storeImage(currentBlob);
@@ -384,7 +383,6 @@ async function retrieveImages(email) {
     });
   });
 }
-
 // Get next id number
 function getNewImageId() {
   const databaseName = "userImages";

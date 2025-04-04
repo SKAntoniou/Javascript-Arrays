@@ -111,43 +111,29 @@ emailSwitchAccount.addEventListener('click', () => {
 });
 
 // Image Buttons ============
+
+// Save image on email using currentEmail
+saveImageButton.addEventListener('click', async () => {
+  console.log("clicked");
+  if (currentEmail !== "") {
+    if (!imageStored) {
+      storeImage(currentBlob);
+      imageStored = true;
+    }
+    storeImageReference(currentImageId, currentEmail);
+    renderSavedImages(currentEmail);
+  }
+});
 // Get New Image
-newImageButton.addEventListener('click', () => {
-  fetchBlob(picsumURL);
+newImageButton.addEventListener('click', async () => {
+  saveImageButton.disabled = true;
+  await fetchBlob(picsumURL);
   if (imageStored) {
     currentImageId = getNewImageId();
   }
   imageStored = false;
+  saveImageButton.disabled = false;
 });
-// Save image on email using currentEmail
-saveImageButton.addEventListener('click', async () => {
-  if (currentEmail !== "") {
-    if (!imageStored) {
-      storeImage(currentBlob);
-    }
-    storeImageReference(currentImageId, currentEmail);
-    renderSavedImages(currentEmail);
-    imageStored = true;
-  }
-});
-
-
-
-
-
-
-// Images on the page have a rolling id, if not saved, the image counter doesn't go up
-// if saved it is saved to the image table and the user that saved it will be a reference to that id on that table.
-// if that user already has that id, don't save it.
-
-
-// DB limitation only allows to add stores (tables) when you change version number on db.
-// This mean for every email, we have to increase version number counter and reopen the database
-// I could store this number in localstorage
-// alternatively make only one other table. 
-
-
-
 
 
 
@@ -177,6 +163,9 @@ function createImgContainer(imageBlob) {
 // Render Images
 async function renderSavedImages(email) {
   const storedImages = await retrieveImages(email);
+  if (typeof storedImages == "string") {
+    console.log("Part 1 of Retrieved Images did not work.")
+  }
   for (let i = 0, j = storedImages.length; i < j; i++) {
     if (!shownImages.includes(storedImages[i].id)) {
       const htmlImg = createImgContainer(storedImages[i].image);
@@ -284,6 +273,18 @@ async function retrieveImages(email) {
       reject(`Database error: ${event.target.error?.message}`);
     };
 
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      currentDBVersion = db.version;
+      if (!db.objectStoreNames.contains("images")) {
+        db.createObjectStore("images", { keyPath: "id", autoIncrement: true });
+      }
+      if (!db.objectStoreNames.contains(email)) {
+        const dbTable = db.createObjectStore(email, { keyPath: "id", autoIncrement: true });
+        dbTable.createIndex("imageIndex", "imageId", { unique: true });
+      }
+    };
+
     request.onsuccess = (event) => {
       const db = event.target.result;
       currentDBVersion = db.version;
@@ -325,14 +326,28 @@ async function retrieveImages(email) {
   });
 
   return imageIds.then( async (imageIds) => {
+    if (typeof imageIds == "string") {
+      return imageIds
+    }
     return new Promise( (resolve, reject) => {
       const request = indexedDB.open(databaseName);
       request.onerror = (event) => {
         reject(`Database error: ${event.target.error?.message}`);
       };
+
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        currentDBVersion = db.version;
+        if (!db.objectStoreNames.contains("images")) {
+          db.createObjectStore("images", { keyPath: "id", autoIncrement: true });
+        }
+      };
+
+
       request.onsuccess = (event) => {
         const db = event.target.result;
         currentDBVersion = db.version;
+
         // Read only this time
         const transaction = db.transaction("images", "readonly");
         const imagesTable = transaction.objectStore("images");
@@ -432,7 +447,6 @@ function makeNewEmailStore(databaseName, email, passthrough) {
   const updatedDB = indexedDB.open(databaseName, currentDBVersion + 1);
   updatedDB.onerror = (event) => {
     console.log(`Database error: ${event.target.error?.message}`);
-    currentDBVersion = db.version;
   };
   updatedDB.onupgradeneeded = (event) => {
     const db = event.target.result;
@@ -445,5 +459,17 @@ function makeNewEmailStore(databaseName, email, passthrough) {
     currentDBVersion = db.version;
     db.close();
     passthrough();
+  };
+}
+function makeNewImageStore(databaseName, passthrough) {
+  const updatedDB = indexedDB.open(databaseName, currentDBVersion + 1);
+  updatedDB.onerror = (event) => {
+    console.log(`Database error: ${event.target.error?.message}`);
+  };
+  updatedDB.onupgradeneeded = (event) => {
+    const db = event.target.result;
+    currentDBVersion = db.version;
+    const dbTable = db.createObjectStore(email, { keyPath: "id", autoIncrement: true });
+    dbTable.createIndex("imageIndex", "imageId", { unique: true });
   };
 }

@@ -133,15 +133,9 @@ saveImageButton.addEventListener('click', async () => {
 newImageButton.addEventListener('click', async () => {
   saveImageButton.disabled = true;
   await fetchBlob(picsumURL);
-  if (imageStored) {
-    currentImageId = getImageIds()
-      .then( () => console.log(currentImageId))
-      .then( () => {saveImageButton.disabled = false} )
-      .catch( (error) => {console.error("Error fetching currentImageId:", error)});
-  } else {
-    imageStored = false;
-    saveImageButton.disabled = false;
-  }
+  currentImageId = await getImageIds();
+  imageStored = false;
+  saveImageButton.disabled = false;
 });
 
 
@@ -239,7 +233,7 @@ async function storeData(email, blob, imageId) {
 
       // Gets location of images table
       const emailsTable = transactionEmails.objectStore("emails");
-
+      
       // Attempt to add email and imageId to table
       const addAttempt = emailsTable.add({ email: email, imageId: await imageId });
 
@@ -383,9 +377,7 @@ async function getImageIds() {
       }
   
       countImages.onsuccess = (event) => {
-        console.log(countImages.result);
         resolve((countImages.result + 1));
-
       }
     }
   });

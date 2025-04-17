@@ -70,6 +70,7 @@ let currentDBVersion = 1;
 // Variable to store current image in
 let currentBlob;
 let currentImageId = getNewImageId(); // This is a promise
+
 // Run the function once to display one image when page loads.
 fetchBlob(picsumURL);
 
@@ -128,10 +129,13 @@ newImageButton.addEventListener('click', async () => {
   saveImageButton.disabled = true;
   await fetchBlob(picsumURL);
   if (imageStored) {
-    currentImageId = getNewImageId();
+    currentImageId = getNewImageId()
+      .then( () => {saveImageButton.disabled = false} )
+      .catch( (error) => {console.error("Error fetching currentImageId:", error)});
+  } else {
+    imageStored = false;
+    saveImageButton.disabled = false;
   }
-  imageStored = false;
-  saveImageButton.disabled = false;
 });
 
 
@@ -254,8 +258,9 @@ function storeImageReference(imageId, email) {
         .then( result => { 
           result++; // To counteract the zero and one index mess
           emailTable.add( { imageId: result} );})
-        .catch( () => {console.error("Error fetching currentImageId in storeImageReference:", error);});
-        transactionEmail.oncomplete = () => {
+        .catch( (error) => {console.error("Error fetching currentImageId in storeImageReference:", error);});
+      
+      transactionEmail.oncomplete = () => {
         db.close();
       };
     }
@@ -437,7 +442,7 @@ function getNewImageId() {
     }
   });
   // It auto increments starting from 1... no comment
-  return allImages.then( allImages => allImages.length)
+  return allImages.then( allImages => allImages.length);
 }
 
 // Database Helper functions =======

@@ -56,26 +56,44 @@ const userArea = document.querySelector(".user-area");
 
 // Child elements
 const genImageContainer = imagePreviewContainer.querySelector(".generated-image");
-const newImageButton = imagePreviewContainer.querySelector(".btn-refresh");
+const nextImageButton = imagePreviewContainer.querySelector(".btn-next");
 const saveImageButton = imagePreviewContainer.querySelector(".btn-save");
 const userSavedImages = userArea.querySelector(".user-saved-images");
 
-// URLs for random image sites
-const picsumURL = "https://picsum.photos/600/400";
-
-
 // Variables for DB Tracking
 let currentEmail = "";
-let imageStored = false;
 let shownImages = [];
 // DB name to just make things easier to edit if needed.
 const imagesDatabaseName = "userImages";
+let dbInstance = null;
 // Variable to store current image in
-let currentBlob;
+let currentSeed = randomSeed(); 
 let currentImageId = getImageIds(); // This is a promise
 
-// Run the function once to display one image when page loads.
-fetchBlob(picsumURL);
+// States ============================================
+// Startup State
+genImageContainer.appendChild(createImgContainer(makePicsumURL(currentSeed - 1)));
+genImageContainer.childNodes[0].classList.add("hide", "prev");
+genImageContainer.appendChild(createImgContainer(makePicsumURL(currentSeed)));
+genImageContainer.childNodes[1].classList.add("current");
+genImageContainer.appendChild(createImgContainer(makePicsumURL(currentSeed + 1)));
+genImageContainer.childNodes[2].classList.add("hide", "next");
+
+// Click off screen state
+window.addEventListener("beforeunload", () => {
+  if (dbInstance) {
+    dbInstance.close();
+    dbInstance = null;
+  }
+});
+
+// Uncaught errors
+window.addEventListener("error", (e) => {
+  console.error("Global JS Error:", e.message, e);
+});
+window.addEventListener("unhandledrejection", (e) => {
+  console.error("Unhandled Promise Rejection:", e.reason);
+});
 
 // Buttons =============================================
 
@@ -119,9 +137,8 @@ emailSwitchAccount.addEventListener('click', () => {
 // Save image on email using currentEmail
 saveImageButton.addEventListener('click', async () => {
   if (currentEmail !== "") {
-    storeData(currentEmail, currentBlob, currentImageId)
+    storeData(currentEmail, currentSeed, currentImageId)
       .then(() => {
-        imageStored = true;
         renderSavedImages(currentEmail);
       })
       .catch((error) => {
@@ -130,11 +147,25 @@ saveImageButton.addEventListener('click', async () => {
   }
 });
 // Get New Image
-newImageButton.addEventListener('click', async () => {
+nextImageButton.addEventListener('click', async () => {
+  // Disabled save button until completed operations.
   saveImageButton.disabled = true;
-  await fetchBlob(picsumURL);
+  // Set current seed to new picture
+  currentSeed++;
+  // Remove hidden previous image
+  genImageContainer.removeChild(document.querySelector(".prev"));
+  // Make current image hidden
+  genImageContainer.childNodes[0].classList.add("hide", "prev");
+  genImageContainer.childNodes[0].classList.remove("current");
+  // Make next image not hidden
+  genImageContainer.childNodes[1].classList.remove("hide", "next");
+  genImageContainer.childNodes[1].classList.add("current");
+  // Load next image
+  genImageContainer.appendChild(createImgContainer(makePicsumURL(currentSeed + 1)));
+  genImageContainer.childNodes[2].classList.add("hide", "next");
+  // Get new image ID
   currentImageId = await getImageIds();
-  imageStored = false;
+  // Enable the save button
   saveImageButton.disabled = false;
 });
 
@@ -142,25 +173,12 @@ newImageButton.addEventListener('click', async () => {
 
 // Helper Functions ================================
 
-// Get image and make it in blob format (binary, to be able to go in database)
-function fetchBlob(url) {
-  return fetch(url)
-          .then(response => response.blob())
-          .then( blob => {
-            currentBlob = blob;
-            let url = window.URL || window.webkitURL;
-            genImageContainer.src = url.createObjectURL(blob);
-            genImageContainer.crossOrigin = "anonymous";
-          });
-};
 // Create HTML to insert image
-function createImgContainer(imageBlob) {
+function createImgContainer(url) {
   const htmlElement = document.createElement("img");
   htmlElement.classList.add("img");
   htmlElement.alt = "Random Image";
-  let url = window.URL || window.webkitURL;
-  htmlElement.src = url.createObjectURL(imageBlob);
-  htmlElement.crossOrigin = "anonymous";
+  htmlElement.src = url;
   return htmlElement;
 }
 // Render Images
@@ -168,12 +186,25 @@ async function renderSavedImages(email) {
   const storedImages = await getImages(email);
   for (let i = 0, j = storedImages.length; i < j; i++) {
     if (!shownImages.includes(storedImages[i].id)) {
-      const htmlImg = createImgContainer(storedImages[i].image);
+      const htmlImg = createImgContainer(makePicsumURL(storedImages[i].image));
       shownImages.push(storedImages[i].id);
       userSavedImages.appendChild( htmlImg );
     }
   }
 }
+// Create Seed for images
+function randomSeed() {
+  // Starting from one million, Ending at one trillion.
+  // This will allow for previous image without seed going negative. It still would be possible but extremely unlikely as you would need to press previous a million times.
+  return Math.floor(Math.random() * 999999999999) + 1000000;
+}
+// Generate a seeded picture from Picsum Photos.
+function makePicsumURL(seed) {
+  const baseURL = "https://picsum.photos/seed/";
+  const size = "/600/400";
+  return baseURL + seed + size;
+}
+
 
 // Database Functions ===============================
 
@@ -184,7 +215,8 @@ function makeDatabaseStructure(event) {
   const db = event.target.result;
   // Check for images table, if it doesn't exist, make it with id as primary key
   if (!db.objectStoreNames.contains("images")) {
-    db.createObjectStore("images", { keyPath: "id", autoIncrement: true });
+    const imageStore = db.createObjectStore("images", { keyPath: "id", autoIncrement: true });
+    imageStore.createIndex("uniqueImage", ["image"], { unique: true });
   }
   // Check for emails' data table
   if (!db.objectStoreNames.contains("emails")) {
@@ -193,97 +225,132 @@ function makeDatabaseStructure(event) {
     emailStore.createIndex("uniqueEmailAndImage", ["email", "imageId"], { unique: true });
   }
 }
-
-// Database Main Functions =========
-// Store Data
-async function storeData(email, blob, imageId) {
-  return new Promise( (resolve, reject) => {
-    // Open database
-    // returns IDBOpenDBRequest object
-    const request = indexedDB.open(imagesDatabaseName);
-
-    // Handle error opening database
-    request.onerror = (event) => {
-      console.error(`Database error: ${event.target.error?.message}`);
-      reject();
+// Open the Database only once function.
+function openDatabase() {
+  // Returns a promise to make the functions wait the DB to open
+  return new Promise((resolve, reject) => {
+    // If open, don't open again
+    if (dbInstance) {
+      return resolve(dbInstance);
     }
-
-    // Event when database is created or version number has changed
+    // Open Database
+    const request = indexedDB.open(imagesDatabaseName);
+    // Same error message
+    request.onerror = (event) => {
+      reject(event.target.error);
+    };
+    // Make database if this is the first time.
     request.onupgradeneeded = (event) => {
       makeDatabaseStructure(event);
     };
+    // Return database is open.
+    request.onsuccess = (event) => {
+      dbInstance = event.target.result;
 
-    request.onsuccess = async (event) => {
-      // The database instance
-      const db = event.target.result;
+      // Handle unexpected close and reset cache. Browsers will force close if not used for a while.
+      dbInstance.onclose = () => {
+        dbInstance = null;
+      };
 
-      if (!imageStored) {
-        // Starts a transaction on images with write privileges
-        const transactionImages = db.transaction("images", "readwrite");
+      // Return database instance.
+      resolve(dbInstance);
+    };
+  });
+}
 
-        // Gets location of images table (in this DB, it is object oriented so it actually called a store.)
-        const imagesTable = transactionImages.objectStore("images");
+// Database Main Functions =========
+// Store Data
+async function storeData(email, seed, imageId) {
+  // Open database and handle it.
+  const dbInstance = await openDatabase();
 
-        // Add blob to table
-        imagesTable.add({ image: blob });
-      }
+  return new Promise( async (resolve, reject) => {
 
-      // Starts a transaction on images with write privileges
-      const transactionEmails = db.transaction("emails", "readwrite");
+    // Starts a transaction on images with write privileges
+    const transactionImages = dbInstance.transaction("images", "readwrite");
 
-      // Gets location of images table
-      const emailsTable = transactionEmails.objectStore("emails");
-      
-      // Attempt to add email and imageId to table
-      const addAttempt = emailsTable.add({ email: email, imageId: await imageId });
+    // Gets location of images table (in this DB, it is object oriented so it actually called a store.)
+    const imagesTable = transactionImages.objectStore("images");
 
-      // Catch duplicates
-      addAttempt.onerror = (event) => {
-        // I don't need to reject here as it is not an error. This is by design.
-        // This is a duplicate so resolve still.
-        resolve();
+    // Add seed to table
+    imagesTable.add({ image: seed });
 
-        // Add something to show user it is a duplicate image
+    // Starts a transaction on images with write privileges
+    const transactionEmails = dbInstance.transaction("emails", "readwrite");
 
-        // This is a placeholder
-        console.log("Attempt to add image to DB failed due to: Duplicate Image")
-      }
+    // Gets location of images table
+    const emailsTable = transactionEmails.objectStore("emails");
+    
+    // Attempt to add email and imageId to table
+    const addAttempt = emailsTable.add({ email: email, imageId: await imageId });
 
-      // Successful attempt 
-      addAttempt.onsuccess = (event) => {
-        resolve();
-        // Maybe add something to say it was added
+    // Catch duplicates
+    addAttempt.onerror = (event) => {
+      // I don't need to reject here as it is not an error. This is by design.
+      // This is a duplicate so resolve still.
+      resolve();
 
-        // This is a placeholder
-        console.log("Email and Image combo has been added to database")
-      }
+      // Add something to show user it is a duplicate image
+
+      // This is a placeholder
+      console.log("Attempt to add image to DB failed due to: Duplicate Image")
+    }
+
+    // Successful attempt 
+    addAttempt.onsuccess = (event) => {
+      resolve();
+      // Maybe add something to say it was added
+
+      // This is a placeholder
+      console.log("Email and Image combo has been added to database")
     }
   });
 }
 // Get images based on email address
 async function getImages(email) {
+  const dbInstance = await openDatabase();
+
   // Part one of two - This will get the imageIds from the emails Database
   // New Promise is for the cursor
   const imageIds = new Promise( (resolve, reject) => {
-    const request = indexedDB.open(imagesDatabaseName);
 
-    request.onerror = (event) => {
+    const transaction = dbInstance.transaction("emails", "readonly");
+    const emailsTable = transaction.objectStore("emails");
+    const getRequest = emailsTable.openCursor();
+
+    let cursorValue = [];
+
+    // On error
+    getRequest.onerror = (event) => {
       reject(`Database error: ${event.target.error?.message}`);
     };
 
-    request.onupgradeneeded = (event) => {
-      makeDatabaseStructure(event);
+    // On return success
+    getRequest.onsuccess = (event) => {
+      // Use Cursor
+      const cursor = event.target.result;
+
+      // This will auto loop.
+      if (cursor) {
+        if (cursor.value.email === email) {
+          cursorValue.push(cursor.value.imageId);
+        }
+        cursor.continue(); // Move to the next matching record
+      } else {
+        resolve(cursorValue);
+      }
     };
+  });
 
-    request.onsuccess = (event) => {
-      const db = event.target.result;
-
-      const transaction = db.transaction("emails", "readonly");
-      const emailsTable = transaction.objectStore("emails");
-      const getRequest = emailsTable.openCursor();
+  // Part two of two - This will get the images based on ImageIds
+  return imageIds.then( async (imageIds) => {
+    return new Promise( (resolve, reject) => {
+      // Read only this time
+      const transaction = dbInstance.transaction("images", "readonly");
+      const imagesTable = transaction.objectStore("images");
+      const getRequest = imagesTable.openCursor();
 
       let cursorValue = [];
-
       // On error
       getRequest.onerror = (event) => {
         reject(`Database error: ${event.target.error?.message}`);
@@ -294,100 +361,41 @@ async function getImages(email) {
         // Use Cursor
         const cursor = event.target.result;
 
+        // Make Array into a set for faster lookups
+        const idSet = new Set(imageIds);
+
         // This will auto loop.
         if (cursor) {
-          if (cursor.value.email === email) {
-            cursorValue.push(cursor.value.imageId);
+          // imageIds are this email's images saved as Original Email ID
+          // Cursor is all the images' ids.
+          if (idSet.has(cursor.value.id)) {
+            cursorValue.push(cursor.value);
           }
           cursor.continue(); // Move to the next matching record
         } else {
           resolve(cursorValue);
         }
       };
-    };
-  });
-
-  // Part two of two - This will get the images based on ImageIds
-  return imageIds.then( async (imageIds) => {
-    return new Promise( (resolve, reject) => {
-      const request = indexedDB.open(imagesDatabaseName);
-      request.onerror = (event) => {
-        reject(`Database error: ${event.target.error?.message}`);
-      };
-      request.onsuccess = (event) => {
-        const db = event.target.result;
-        // Read only this time
-        const transaction = db.transaction("images", "readonly");
-        const imagesTable = transaction.objectStore("images");
-        const getRequest = imagesTable.openCursor();
-
-        let cursorValue = [];
-        // On error
-        getRequest.onerror = (event) => {
-          reject(`Database error: ${event.target.error?.message}`);
-        };
-
-        // On return success
-        getRequest.onsuccess = (event) => {
-          // Use Cursor
-          const cursor = event.target.result;
-
-          // This will auto loop.
-          if (cursor) {
-            for (let i = 0, j = imageIds.length; i < j; i++) {
-              // imageIds are this email's images saved as Original Email ID
-              // Cursor is all the images' ids.
-              if (imageIds[i] == cursor.value.id) {
-                cursorValue.push(cursor.value);
-              }
-            }
-            cursor.continue(); // Move to the next matching record
-          } else {
-            resolve(cursorValue);
-          }
-        };
-      }
     });
   });
 }
 
 async function getImageIds() {
-  return new Promise( ( resolve, reject ) => {
-    const request = indexedDB.open(imagesDatabaseName);
+  const dbInstance = await openDatabase();
 
-    request.onerror = (event) => {
-      console.error(`Database error: ${event.target.error?.message}`);
+  return new Promise( ( resolve, reject ) => {
+    const transaction = dbInstance.transaction("images", "readonly");
+    const imagesTable = transaction.objectStore("images");
+
+    countImages = imagesTable.count();
+
+    countImages.onerror = (event) => {
+      console.error("Counting Image Database entries failed: ", event.target.error?.message);
       reject(event.target.error);
     }
-  
-    request.onupgradeneeded = (event) => {
-      makeDatabaseStructure(event);
-    }
-  
-    request.onsuccess = (event) => {
-      const db = event.target.result;
-      const transaction = db.transaction("images", "readonly");
-      const imagesTable = transaction.objectStore("images");
-  
-      countImages = imagesTable.count();
-  
-      countImages.onerror = (event) => {
-        console.error("Counting Image Database entries failed: ", event.target.error?.message);
-        reject(event.target.error);
-      }
-  
-      countImages.onsuccess = (event) => {
-        resolve((countImages.result + 1));
-      }
+
+    countImages.onsuccess = (event) => {
+      resolve((countImages.result + 1));
     }
   });
 }
-
-
-// Then
-// Redo helper functions
-// Redo buttons
-
-// Future
-// Add seeded images
-

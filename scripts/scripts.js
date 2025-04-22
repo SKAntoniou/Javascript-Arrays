@@ -56,8 +56,10 @@ const userArea = document.querySelector(".user-area");
 
 // Child elements
 const genImageContainer = imagePreviewContainer.querySelector(".generated-image");
+const prevImageButton = imagePreviewContainer.querySelector(".btn-prev");
 const nextImageButton = imagePreviewContainer.querySelector(".btn-next");
 const saveImageButton = imagePreviewContainer.querySelector(".btn-save");
+const statusContainer = imagePreviewContainer.querySelector(".status-container");
 const userSavedImages = userArea.querySelector(".user-saved-images");
 
 // Variables for DB Tracking
@@ -155,11 +157,11 @@ nextImageButton.addEventListener('click', async () => {
   // Remove hidden previous image
   genImageContainer.removeChild(document.querySelector(".prev"));
   // Make current image hidden
-  genImageContainer.childNodes[0].classList.add("hide", "prev");
-  genImageContainer.childNodes[0].classList.remove("current");
+  genImageContainer.querySelector(".current").classList.add("hide", "prev");
+  genImageContainer.querySelector(".current").classList.remove("current");
   // Make next image not hidden
-  genImageContainer.childNodes[1].classList.remove("hide", "next");
-  genImageContainer.childNodes[1].classList.add("current");
+  genImageContainer.querySelector(".next").classList.add("current");
+  genImageContainer.querySelector(".next").classList.remove("hide", "next");
   // Load next image
   genImageContainer.appendChild(createImgContainer(makePicsumURL(currentSeed + 1)));
   genImageContainer.childNodes[2].classList.add("hide", "next");
@@ -168,8 +170,28 @@ nextImageButton.addEventListener('click', async () => {
   // Enable the save button
   saveImageButton.disabled = false;
 });
-
-
+// Go back to last image
+prevImageButton.addEventListener('click', async () => {
+  // Disabled save button until completed operations.
+  saveImageButton.disabled = true;
+  // Set current seed to new picture
+  currentSeed--;
+  // Remove hidden next image
+  genImageContainer.removeChild(document.querySelector(".next"));
+  // Make current image hidden
+  genImageContainer.querySelector(".current").classList.add("hide", "next");
+  genImageContainer.querySelector(".current").classList.remove("current");
+  // Make prev image not hidden
+  genImageContainer.querySelector(".prev").classList.add("current");
+  genImageContainer.querySelector(".prev").classList.remove("hide", "prev");
+  // Load next image
+  genImageContainer.prepend(createImgContainer(makePicsumURL(currentSeed - 1)));
+  genImageContainer.childNodes[0].classList.add("hide", "prev");
+  // Get new image ID
+  currentImageId = await getImageIds();
+  // Enable the save button
+  saveImageButton.disabled = false;
+});
 
 // Helper Functions ================================
 
@@ -288,21 +310,15 @@ async function storeData(email, seed, imageId) {
     addAttempt.onerror = (event) => {
       // I don't need to reject here as it is not an error. This is by design.
       // This is a duplicate so resolve still.
+      statusContainer.innerHTML = "You have already saved this image to your email address";
       resolve();
-
-      // Add something to show user it is a duplicate image
-
-      // This is a placeholder
-      console.log("Attempt to add image to DB failed due to: Duplicate Image")
     }
 
     // Successful attempt 
     addAttempt.onsuccess = (event) => {
+      // Successfully saved 
+      statusContainer.innerHTML = "Image added to your collection";
       resolve();
-      // Maybe add something to say it was added
-
-      // This is a placeholder
-      console.log("Email and Image combo has been added to database")
     }
   });
 }
